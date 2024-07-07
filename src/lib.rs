@@ -15,6 +15,10 @@ pub mod ray;
 pub const INFINITY: f32 = std::f32::INFINITY;
 pub const NEG_INFINITY: f32 = std::f32::NEG_INFINITY;
 pub const PI: f32 = 3.1415926535897932385;
+pub const COLOR_INTENSITY: Interval = Interval {
+    min: 0.0,
+    max: 0.999,
+};
 
 pub fn degrees_to_radians(degrees: f32) -> f32 {
     degrees * PI / 180.0
@@ -59,7 +63,24 @@ impl Interval {
         self.min < v && v < self.max
     }
 
+    pub fn clamp(&self, x: f32) -> f32 {
+        if x < self.min {
+            self.min
+        } else if x > self.max {
+            self.max
+        } else {
+            x
+        }
+    }
+
     pub const fn empty() -> Self {
+        Self {
+            min: INFINITY,
+            max: NEG_INFINITY,
+        }
+    }
+
+    pub const fn universe() -> Self {
         Self {
             min: NEG_INFINITY,
             max: INFINITY,
@@ -143,9 +164,9 @@ impl std::fmt::Display for Color {
         let r = self.0.x();
         let g = self.0.y();
         let b = self.0.z();
-        let rbyte = (255.999 * r) as u32;
-        let gbyte = (255.999 * g) as u32;
-        let bbyte = (255.999 * b) as u32;
+        let rbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(r)) as u32;
+        let gbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(g)) as u32;
+        let bbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(b)) as u32;
         write!(f, "{} {} {}", rbyte, gbyte, bbyte)
     }
 }

@@ -1,6 +1,6 @@
 use ray_tracing_weekend::{
     camera::Camera,
-    hittable::{Sphere, Triangle, World},
+    hittable::{Sphere, World},
     Point,
 };
 
@@ -16,27 +16,21 @@ fn main() -> color_eyre::Result<()> {
     // to the ray's intersection by the sphere's radius instead of computing
     // the ray's length by squaring.
     let aspect_ratio: f32 = 16.0 / 9.0;
-    let image_width: u32 = 1240;
+    let image_width: u32 = 1080;
+    let samples_per_pixel: u32 = 25;
 
     // Camera
 
-    let camera = Camera::new(aspect_ratio, image_width);
+    let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel);
 
     // Objects in the world
-    // let sphere1 = Sphere::new(Point::new(0.5, 0.0, -1.0), 0.5);
+    let sphere1 = Sphere::new(Point::new(0.5, 0.0, -1.0), 0.5);
     let sphere2 = Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0);
-    let a = Point::new(-1.0, -1.0, -10.0);
-    let b = Point::new(2.0, -1.0, -2.0);
-    let c = Point::new(1.0, 1.5, -2.0);
-    let triangle1 = Triangle::new(a, b, c);
-    let triangle2 = Triangle::new(Point::new(2.0, 1.5, -4.0), b, c);
 
     // World
     let mut world = World::new();
-    // world.push(&sphere1);
+    world.push(&sphere1);
     world.push(&sphere2);
-    world.push(&triangle1);
-    world.push(&triangle2);
 
     camera.render(&world)?;
 

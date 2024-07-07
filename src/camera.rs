@@ -4,6 +4,7 @@ use indicatif::ProgressBar;
 
 use crate::{
     hittable::{Hittable, World},
+    random_0_1_f32,
     ray::Ray,
     Color, Interval, Point, Vec3, INFINITY,
 };
@@ -11,6 +12,8 @@ use crate::{
 pub struct Camera {
     image_width: u32,
     image_height: u32,
+    samples_per_pixel: u32,
+    pixel_samples_scale: f32,
     center: Point,
     pixel_00_loc: Point,
     pixel_delta_u: Vec3,
@@ -18,7 +21,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f32, image_width: u32) -> Self {
+    pub fn new(aspect_ratio: f32, image_width: u32, samples_per_pixel: u32) -> Self {
         // Calculate image height
         let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
         let image_height: u32 = if image_height < 1 { 1 } else { image_height };
@@ -44,6 +47,8 @@ impl Camera {
         Self {
             image_width,
             image_height,
+            samples_per_pixel,
+            pixel_samples_scale: 1.0 / samples_per_pixel as f32,
             center,
             pixel_00_loc,
             pixel_delta_u,
@@ -65,19 +70,33 @@ impl Camera {
 
         for j in 0..self.image_height {
             for i in 0..self.image_width {
-                let pixel_center = *self.pixel_00_loc
-                    + (i as f32 * self.pixel_delta_u)
-                    + (j as f32 * self.pixel_delta_v);
-                let ray_direction = pixel_center - *self.center;
-                let ray = Ray::new(self.center, ray_direction);
-                let color = self.ray_color(&ray, &world);
-                write!(writer, "{} ", color)?;
+                let mut pixel_color = Color::black();
+                for _ in 0..self.samples_per_pixel {
+                    let ray = self.get_ray(i, j);
+                    *pixel_color += *self.ray_color(&ray, world);
+                }
+                let pixel_color: Color = (self.pixel_samples_scale * *pixel_color).into();
+                write!(writer, "{} ", pixel_color,)?;
                 bar.inc(1);
             }
-            // writeln!(writer, "")?;
+            writeln!(writer, "")?;
         }
         bar.finish_and_clear();
         Ok(())
+    }
+
+    fn get_ray(&self, i: u32, j: u32) -> Ray {
+        let offset = Self::sample_square();
+        let pixel_sample = *self.pixel_00_loc
+            + ((i as f32 + offset.x()) * self.pixel_delta_u)
+            + ((j as f32 + offset.y()) * self.pixel_delta_v);
+        let ray_origin = self.center;
+        let ray_direction = pixel_sample - *ray_origin;
+        Ray::new(ray_origin, ray_direction)
+    }
+
+    fn sample_square() -> Vec3 {
+        Vec3::new(random_0_1_f32() - 0.5, random_0_1_f32() - 0.5, 0.0)
     }
 
     fn ray_color(&self, ray: &Ray, world: &World) -> Color {
