@@ -5,7 +5,6 @@ use ray_tracing_weekend::{
 };
 
 fn main() -> color_eyre::Result<()> {
-    // TODO: Continue with Chapter 7.0
     // TODO: A serialization format for scenes. Otherwise, we have to manually
     // change `main` all the time.
     // Note on a type for normal length vectors: Create a type for normal length
