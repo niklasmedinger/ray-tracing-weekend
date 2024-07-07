@@ -28,6 +28,7 @@ pub fn random_interval_f32(min: f32, max: f32) -> f32 {
     thread_rng().gen_range(min..max)
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct Interval {
     min: f32,
     max: f32,
@@ -66,7 +67,7 @@ impl Interval {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Point(Vec3);
 
 impl Point {
@@ -95,7 +96,7 @@ impl From<Vec3> for Point {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Color(Vec3);
 
 impl Color {
