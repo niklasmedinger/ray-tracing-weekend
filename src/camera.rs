@@ -3,10 +3,14 @@ use std::io::{BufWriter, Write};
 use indicatif::ProgressBar;
 
 use crate::{
+    color::Color,
     hittable::{Hittable, World},
+    interval::Interval,
+    point::Point,
     random_0_1_f32,
     ray::Ray,
-    Color, Interval, Point, Vec3, INFINITY,
+    vec3::Vec3,
+    INFINITY,
 };
 
 pub struct Camera {
@@ -41,7 +45,7 @@ impl Camera {
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
 
-        let viewport_upper_left = *center - focal_length_vec - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = center - focal_length_vec - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel_00_loc = (viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v)).into();
 
         Self {
@@ -73,13 +77,11 @@ impl Camera {
                 let mut pixel_color = Color::black();
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    *pixel_color += *self.ray_color(&ray, world);
+                    pixel_color += self.ray_color(&ray, world);
                 }
-                let pixel_color: Color = (self.pixel_samples_scale * *pixel_color).into();
-                write!(writer, "{} ", pixel_color,)?;
+                write!(writer, "{} ", self.pixel_samples_scale * pixel_color,)?;
                 bar.inc(1);
             }
-            writeln!(writer, "")?;
         }
         bar.finish_and_clear();
         Ok(())
@@ -87,11 +89,11 @@ impl Camera {
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
         let offset = Self::sample_square();
-        let pixel_sample = *self.pixel_00_loc
+        let pixel_sample = self.pixel_00_loc
             + ((i as f32 + offset.x()) * self.pixel_delta_u)
             + ((j as f32 + offset.y()) * self.pixel_delta_v);
         let ray_origin = self.center;
-        let ray_direction = pixel_sample - *ray_origin;
+        let ray_direction = pixel_sample - ray_origin;
         Ray::new(ray_origin, ray_direction)
     }
 
@@ -102,10 +104,17 @@ impl Camera {
     fn ray_color(&self, ray: &Ray, world: &World) -> Color {
         let interval = Interval::new(0.0, INFINITY);
         if let Some(hit_record) = world.hit(ray, interval) {
-            return (0.5 * (hit_record.normal() + Vec3::new(1.0, 1.0, 1.0))).into();
+            let color = 0.5 * (hit_record.normal() + Vec3::new(1.0, 1.0, 1.0));
+            return Color::from(color);
         }
         let unit_direction = ray.direction().unit();
         let a: f32 = 0.5 * (unit_direction.y() + 1.0);
-        ((1.0 - a) * *Color::white() + a * *Color::new(0.5, 0.7, 1.0)).into()
+        (1.0 - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0)
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self::new(16.0 / 9.0, 800, 50)
     }
 }

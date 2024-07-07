@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{ray::Ray, Interval, Point, Vec3};
+use crate::{interval::Interval, point::Point, ray::Ray, vec3::Vec3};
 
 #[derive(Debug, Copy, Clone)]
 pub struct HitRecord {
@@ -66,7 +66,7 @@ impl Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        let oc = *self.center - **ray.origin();
+        let oc = self.center - *ray.origin();
         let a = ray.direction().length_squared();
         let h = ray.direction().dot(oc);
         let c = oc.length_squared() - self.radius * self.radius;
@@ -85,7 +85,7 @@ impl Hittable for Sphere {
         }
 
         let p = ray.at(root);
-        let normal = (*p - *self.center) / self.radius;
+        let normal = (p - self.center) / self.radius;
         Some(HitRecord::new(&ray, p, normal, root))
     }
 }
@@ -105,18 +105,18 @@ impl Triangle {
 
 impl Hittable for Triangle {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        let e1 = *self.b - *self.a;
-        let e2 = *self.c - *self.a;
+        let e1 = self.b - self.a;
+        let e2 = self.c - self.a;
         let n = e1.cross(e2);
         let det = -ray.direction().dot(n);
         let inv_det = 1.0 / det;
-        let a_o = **ray.origin() - *self.a;
+        let a_o = *ray.origin() - self.a;
         let d_a_o = a_o.cross(*ray.direction());
         let u = e2.dot(d_a_o) * inv_det;
         let v = -e1.dot(d_a_o) * inv_det;
         let t = a_o.dot(n) * inv_det;
-        let p: Point = (**ray.origin() + (t * *ray.direction())).into();
-        if ray_t.surrounds(p.length())
+        let p = *ray.origin() + (t * *ray.direction());
+        if ray_t.surrounds(p.as_vec3().length())
             && det >= (1.0 / 10.0_f32.powi(10))
             && t >= 0.0
             && u >= 0.0
@@ -169,7 +169,7 @@ impl<'a> Hittable for World<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{ray::Ray, Interval, Point, Vec3, INFINITY};
+    use crate::{interval::Interval, point::Point, ray::Ray, vec3::Vec3, INFINITY};
 
     use super::{Hittable, Triangle};
 
@@ -189,7 +189,7 @@ mod tests {
             t
         );
         let record = record.unwrap();
-        assert_eq!(*record.p(), *c, "expected {:?}, got {:?}", *c, *record.p());
+        assert_eq!(record.p(), c, "expected {:?}, got {:?}", c, record.p());
 
         assert!(
             record.front_face(),
