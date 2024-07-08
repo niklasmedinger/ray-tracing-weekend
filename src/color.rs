@@ -65,6 +65,14 @@ impl Mul<Color> for f32 {
     }
 }
 
+impl Mul for Color {
+    type Output = Color;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Color(self.0 * rhs.0)
+    }
+}
+
 impl Default for Color {
     fn default() -> Self {
         Self::black()
@@ -79,9 +87,18 @@ impl From<Vec3> for Color {
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let r = self.0.x();
-        let g = self.0.y();
-        let b = self.0.z();
+        // Linear to gamma space
+        fn linear_to_gamma(linear_component: f32) -> f32 {
+            if linear_component > 0.0 {
+                linear_component.sqrt()
+            } else {
+                0.0
+            }
+        }
+
+        let r = linear_to_gamma(self.0.x());
+        let g = linear_to_gamma(self.0.y());
+        let b = linear_to_gamma(self.0.z());
         let rbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(r)) as u32;
         let gbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(g)) as u32;
         let bbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(b)) as u32;

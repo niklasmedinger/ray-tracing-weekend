@@ -18,6 +18,7 @@ pub struct Camera {
     image_height: u32,
     samples_per_pixel: u32,
     pixel_samples_scale: f32,
+    max_depth: u32,
     center: Point,
     pixel_00_loc: Point,
     pixel_delta_u: Vec3,
@@ -25,7 +26,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f32, image_width: u32, samples_per_pixel: u32) -> Self {
+    pub fn new(
+        aspect_ratio: f32,
+        image_width: u32,
+        samples_per_pixel: u32,
+        max_depth: u32,
+    ) -> Self {
         // Calculate image height
         let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
         let image_height: u32 = if image_height < 1 { 1 } else { image_height };
@@ -53,6 +59,7 @@ impl Camera {
             image_height,
             samples_per_pixel,
             pixel_samples_scale: 1.0 / samples_per_pixel as f32,
+            max_depth,
             center,
             pixel_00_loc,
             pixel_delta_u,
@@ -77,7 +84,7 @@ impl Camera {
                 let mut pixel_color = Color::black();
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&ray, world);
+                    pixel_color += self.ray_color(&ray, self.max_depth, world);
                 }
                 write!(writer, "{} ", self.pixel_samples_scale * pixel_color,)?;
                 bar.inc(1);
@@ -101,11 +108,15 @@ impl Camera {
         Vec3::new(random_0_1_f32() - 0.5, random_0_1_f32() - 0.5, 0.0)
     }
 
-    fn ray_color(&self, ray: &Ray, world: &World) -> Color {
-        let interval = Interval::new(0.0, INFINITY);
+    fn ray_color(&self, ray: &Ray, depth: u32, world: &World) -> Color {
+        if depth <= 0 {
+            return Color::black();
+        }
+        let interval = Interval::new(0.001, INFINITY);
         if let Some(hit_record) = world.hit(ray, interval) {
-            let color = 0.5 * (hit_record.normal() + Vec3::new(1.0, 1.0, 1.0));
-            return Color::from(color);
+            // Hit record is cheap to clone. Only primitive types + a Rc.
+            let (scattered, attenuation) = hit_record.material().scatter(ray, hit_record.clone());
+            return attenuation * self.ray_color(&scattered, depth - 1, world);
         }
         let unit_direction = ray.direction().unit();
         let a: f32 = 0.5 * (unit_direction.y() + 1.0);
@@ -115,6 +126,6 @@ impl Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Self::new(16.0 / 9.0, 800, 50)
+        Self::new(16.0 / 9.0, 800, 75, 50)
     }
 }
