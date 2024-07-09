@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
-    camera::Camera,
+    camera::CameraBuilder,
     color::Color,
     hittable::{Sphere, World},
     material::{Lambertian, Metal},
@@ -12,7 +12,7 @@ use ray_tracing_weekend::{
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     // Default camera
-    let camera = Camera::default();
+    let camera = CameraBuilder::default().build();
 
     // Materials
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));

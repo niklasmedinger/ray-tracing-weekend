@@ -27,14 +27,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    // TODO: A builder for camera such that users only need to set non-default values
-    // for fields they are interested in.
     pub fn new(
         aspect_ratio: f32,
         image_width: u32,
         samples_per_pixel: u32,
         max_depth: u32,
-        vfov: f32,
+        fov: f32,
         look_from: Point,
         look_at: Point,
         vup: Vec3,
@@ -47,7 +45,7 @@ impl Camera {
 
         // Viewport
         let focal_length: f32 = (look_from - look_at).length();
-        let theta = degrees_to_radians(vfov);
+        let theta = degrees_to_radians(fov);
         let h = f32::tan(theta / 2.0);
         let viewport_height: f32 = 2.0 * h * focal_length;
         let viewport_width: f32 = viewport_height * (image_width as f32 / image_height as f32);
@@ -139,17 +137,84 @@ impl Camera {
     }
 }
 
-impl Default for Camera {
-    fn default() -> Self {
-        Self::new(
-            16.0 / 9.0,
-            800,
-            75,
-            50,
-            90.0,
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, -1.0),
-            Vec3::new(0.0, 1.0, 0.0),
+pub struct CameraBuilder {
+    /// The aspect ratio for the [Camera].
+    aspect_ratio: f32,
+    /// The image width for the [Camera].
+    image_width: u32,
+    /// The samples per pixel used for antialising by the [Camera].
+    samples_per_pixel: u32,
+    /// The max recursion depth for computing the color of a [Ray] by the [Camera].
+    /// I.e., the maximum amount of scattered rays produced by an initial [Ray].
+    max_depth: u32,
+    /// The field-of-view for the [Camera].
+    fov: f32,
+    /// The origin for the [Camera].
+    look_from: Point,
+    /// The point the [Camera] looks at.
+    look_at: Point,
+    /// The [Vec3] that is considered `up` by the [Camera].
+    vup: Vec3,
+}
+
+impl CameraBuilder {
+    pub fn build(&self) -> Camera {
+        Camera::new(
+            self.aspect_ratio,
+            self.image_width,
+            self.samples_per_pixel,
+            self.max_depth,
+            self.fov,
+            self.look_from,
+            self.look_at,
+            self.vup,
         )
+    }
+
+    pub fn aspect_ratio(&mut self, aspect_ratio: f32) -> &mut Self {
+        self.aspect_ratio = aspect_ratio;
+        self
+    }
+
+    pub fn image_width(&mut self, image_width: u32) -> &mut Self {
+        self.image_width = image_width;
+        self
+    }
+
+    pub fn samples_per_pixel(&mut self, samples_per_pixel: u32) -> &mut Self {
+        self.samples_per_pixel = samples_per_pixel;
+        self
+    }
+
+    pub fn max_depth(&mut self, max_depth: u32) -> &mut Self {
+        self.max_depth = max_depth;
+        self
+    }
+
+    pub fn fov(&mut self, fov: f32) -> &mut Self {
+        self.fov = fov;
+        self
+    }
+
+    pub fn orientation(&mut self, look_from: Point, look_at: Point, vup: Vec3) -> &mut Self {
+        self.look_from = look_from;
+        self.look_at = look_at;
+        self.vup = vup;
+        self
+    }
+}
+
+impl Default for CameraBuilder {
+    fn default() -> Self {
+        Self {
+            aspect_ratio: 16.0 / 9.0,
+            image_width: 800,
+            samples_per_pixel: 50,
+            max_depth: 25,
+            fov: 90.0,
+            look_from: Point::new(0.0, 0.0, 0.0),
+            look_at: Point::new(0.0, 0.0, -1.0),
+            vup: Vec3::new(0.0, 1.0, 0.0),
+        }
     }
 }
