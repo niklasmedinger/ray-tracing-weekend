@@ -4,6 +4,7 @@ use indicatif::ProgressBar;
 
 use crate::{
     color::Color,
+    degrees_to_radians,
     hittable::{Hittable, World},
     interval::Interval,
     point::Point,
@@ -26,32 +27,46 @@ pub struct Camera {
 }
 
 impl Camera {
+    // TODO: A builder for camera such that users only need to set non-default values
+    // for fields they are interested in.
     pub fn new(
         aspect_ratio: f32,
         image_width: u32,
         samples_per_pixel: u32,
         max_depth: u32,
+        vfov: f32,
+        look_from: Point,
+        look_at: Point,
+        vup: Vec3,
     ) -> Self {
         // Calculate image height
         let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
         let image_height: u32 = if image_height < 1 { 1 } else { image_height };
 
-        // Camera
-        let focal_length: f32 = 1.0;
-        let focal_length_vec = Vec3::new(0.0, 0.0, focal_length);
-        let center = Point::new(0.0, 0.0, 0.0);
+        let center = look_from;
 
         // Viewport
-        let viewport_height: f32 = 2.0;
+        let focal_length: f32 = (look_from - look_at).length();
+        let theta = degrees_to_radians(vfov);
+        let h = f32::tan(theta / 2.0);
+        let viewport_height: f32 = 2.0 * h * focal_length;
         let viewport_width: f32 = viewport_height * (image_width as f32 / image_height as f32);
 
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+        let w = (look_from - look_at).unit();
+        let u = (vup.cross(w)).unit();
+        let v = w.cross(u);
 
+        // Calculate the vectors across the horizontal and down the vertical viewport edges
+        let viewport_u = viewport_width * u;
+        let viewport_v = viewport_height * -v;
+
+        // Calculate the horizontal and vertical delta vectors from pixel to pixel.
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
 
-        let viewport_upper_left = center - focal_length_vec - viewport_u / 2.0 - viewport_v / 2.0;
+        // Calculate the location of the upper left pixel.
+        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel_00_loc = (viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v)).into();
 
         Self {
@@ -126,6 +141,15 @@ impl Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Self::new(16.0 / 9.0, 800, 75, 50)
+        Self::new(
+            16.0 / 9.0,
+            800,
+            75,
+            50,
+            90.0,
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, -1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+        )
     }
 }
