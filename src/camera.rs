@@ -8,7 +8,7 @@ use crate::{
     hittable::{Hittable, World},
     interval::Interval,
     point::Point,
-    random_0_1_f32,
+    random_0_1_f32, random_in_unit_disk,
     ray::Ray,
     vec3::Vec3,
     INFINITY,
@@ -24,6 +24,12 @@ pub struct Camera {
     pixel_00_loc: Point,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    /// Variation angle of rays through each pixel
+    defocus_angle: f32,
+    /// Defocus desk horizontal radius
+    defocus_disk_u: Vec3,
+    /// Defocus desk vertical radius
+    defocus_disk_v: Vec3,
 }
 
 impl Camera {
@@ -36,6 +42,8 @@ impl Camera {
         look_from: Point,
         look_at: Point,
         vup: Vec3,
+        defocus_angle: f32,
+        focus_distance: f32,
     ) -> Self {
         // Calculate image height
         let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
@@ -44,10 +52,9 @@ impl Camera {
         let center = look_from;
 
         // Viewport
-        let focal_length: f32 = (look_from - look_at).length();
         let theta = degrees_to_radians(fov);
         let h = f32::tan(theta / 2.0);
-        let viewport_height: f32 = 2.0 * h * focal_length;
+        let viewport_height: f32 = 2.0 * h * focus_distance;
         let viewport_width: f32 = viewport_height * (image_width as f32 / image_height as f32);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
@@ -64,8 +71,14 @@ impl Camera {
         let pixel_delta_v = viewport_v / image_height as f32;
 
         // Calculate the location of the upper left pixel.
-        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left =
+            center - (focus_distance * w) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel_00_loc = (viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v)).into();
+
+        // Calculate the camera defocus disk basis vectors.
+        let defocus_radius = focus_distance * degrees_to_radians(defocus_angle / 2.0).tan();
+        let defocus_disk_u = u * defocus_radius;
+        let defocus_disk_v = v * defocus_radius;
 
         Self {
             image_width,
@@ -77,6 +90,9 @@ impl Camera {
             pixel_00_loc,
             pixel_delta_u,
             pixel_delta_v,
+            defocus_disk_u,
+            defocus_disk_v,
+            defocus_angle,
         }
     }
 
@@ -108,17 +124,28 @@ impl Camera {
     }
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
+        // Construct a camera ray originating from the defocus disk and directed at a randomly
+        // sampled point around the pixel location i, j.
         let offset = Self::sample_square();
         let pixel_sample = self.pixel_00_loc
             + ((i as f32 + offset.x()) * self.pixel_delta_u)
             + ((j as f32 + offset.y()) * self.pixel_delta_v);
-        let ray_origin = self.center;
+        let ray_origin = if self.defocus_angle <= 0.0 {
+            self.center
+        } else {
+            self.defocus_disk_sample()
+        };
         let ray_direction = pixel_sample - ray_origin;
         Ray::new(ray_origin, ray_direction)
     }
 
     fn sample_square() -> Vec3 {
         Vec3::new(random_0_1_f32() - 0.5, random_0_1_f32() - 0.5, 0.0)
+    }
+
+    fn defocus_disk_sample(&self) -> Point {
+        let p = random_in_unit_disk();
+        self.center + p.x() * self.defocus_disk_u + p.y() * self.defocus_disk_v
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &World) -> Color {
@@ -155,6 +182,10 @@ pub struct CameraBuilder {
     look_at: Point,
     /// The [Vec3] that is considered `up` by the [Camera].
     vup: Vec3,
+    /// Variation angle of rays through each pixel
+    defocus_angle: f32,
+    /// Distance from camera look_from point to plane of perfect focus
+    focus_distance: f32,
 }
 
 impl CameraBuilder {
@@ -168,6 +199,8 @@ impl CameraBuilder {
             self.look_from,
             self.look_at,
             self.vup,
+            self.defocus_angle,
+            self.focus_distance,
         )
     }
 
@@ -196,10 +229,16 @@ impl CameraBuilder {
         self
     }
 
-    pub fn orientation(&mut self, look_from: Point, look_at: Point, vup: Vec3) -> &mut Self {
+    pub fn with_orientation(&mut self, look_from: Point, look_at: Point, vup: Vec3) -> &mut Self {
         self.look_from = look_from;
         self.look_at = look_at;
         self.vup = vup;
+        self
+    }
+
+    pub fn with_defocus(&mut self, defocus_angle: f32, focus_distance: f32) -> &mut Self {
+        self.defocus_angle = defocus_angle;
+        self.focus_distance = focus_distance;
         self
     }
 }
@@ -215,6 +254,8 @@ impl Default for CameraBuilder {
             look_from: Point::new(0.0, 0.0, 0.0),
             look_at: Point::new(0.0, 0.0, -1.0),
             vup: Vec3::new(0.0, 1.0, 0.0),
+            defocus_angle: 0.0,
+            focus_distance: 10.0,
         }
     }
 }
