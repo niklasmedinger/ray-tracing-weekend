@@ -115,7 +115,7 @@ impl Camera {
                     let ray = self.get_ray(i, j);
                     pixel_color += self.ray_color(&ray, self.max_depth, world);
                 }
-                write!(writer, "{} ", self.pixel_samples_scale * pixel_color,)?;
+                write!(writer, "{} ", self.pixel_samples_scale * pixel_color)?;
                 bar.inc(1);
             }
         }
@@ -189,6 +189,10 @@ pub struct CameraBuilder {
 }
 
 impl CameraBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn build(&self) -> Camera {
         Camera::new(
             self.aspect_ratio,
