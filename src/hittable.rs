@@ -156,29 +156,29 @@ impl Hittable for Sphere {
 //     }
 // }
 
-pub struct World<'a>(Vec<&'a dyn Hittable>);
+pub struct World(Vec<Box<dyn Hittable>>);
 
-impl<'a> World<'a> {
+impl World {
     pub fn new() -> Self {
         Self(Vec::new())
     }
 }
 
-impl<'a> Deref for World<'a> {
-    type Target = Vec<&'a dyn Hittable>;
+impl Deref for World {
+    type Target = Vec<Box<dyn Hittable>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> DerefMut for World<'a> {
+impl DerefMut for World {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a> Hittable for World<'a> {
+impl Hittable for World {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let mut closest_so_far = ray_t.max();
         let mut result = None;

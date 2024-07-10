@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 indicatif = "0.17.8"
-rand = { version = "0.8.5", features = ["small_rng"] }
+rand = { version = "0.8.5" }
 
 [dev-dependencies]
 color-eyre = "0.6.3"

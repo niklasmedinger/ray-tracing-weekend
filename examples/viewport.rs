@@ -39,10 +39,10 @@ fn main() -> color_eyre::Result<()> {
 
     // World
     let mut world = World::new();
-    world.push(&ground_sphere);
-    world.push(&center_sphere);
-    world.push(&left_sphere);
-    world.push(&right_sphere);
+    world.push(Box::new(ground_sphere));
+    world.push(Box::new(center_sphere));
+    world.push(Box::new(left_sphere));
+    world.push(Box::new(right_sphere));
 
     // Render
     camera.render(&world).wrap_err("Failed to render image.")?;
