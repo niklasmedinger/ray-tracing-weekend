@@ -26,8 +26,8 @@ fn main() -> color_eyre::Result<()> {
 
     // World
     let mut world = World::new();
-    world.push(&sphere1);
-    world.push(&sphere2);
+    world.push(Box::new(sphere1));
+    world.push(Box::new(sphere2));
 
     // Render
     camera.render(&world).wrap_err("Failed to render image.")?;

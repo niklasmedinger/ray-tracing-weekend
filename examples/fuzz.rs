@@ -7,26 +7,18 @@ use ray_tracing_weekend::{
     hittable::{Sphere, World},
     material::{Lambertian, Metal},
     point::Point,
-    vec3::Vec3,
 };
 
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     // Default camera
-    let look_from = Point::new(-2.0, 2.0, 1.0);
-    let look_at = Point::new(0.0, 0.0, -1.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let camera = CameraBuilder::default()
-        .with_orientation(look_from, look_at, vup)
-        .fov(20.0)
-        .with_defocus(5.0, 4.0)
-        .build();
+    let camera = CameraBuilder::default().build();
 
     // Materials
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
+    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     // Objects in the world
     let ground_sphere = Sphere::new(

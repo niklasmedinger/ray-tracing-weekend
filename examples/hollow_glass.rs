@@ -17,7 +17,7 @@ fn main() -> color_eyre::Result<()> {
     // Materials
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
     let material_right = Rc::new(Dielectric::new(1.5));
     let material_bubble = Rc::new(Dielectric::new(1.0 / 1.5));
 
@@ -34,7 +34,7 @@ fn main() -> color_eyre::Result<()> {
 
     // World
     let mut world = World::new();
-    world.push(Box::new(ground_sphere));
+    world.push(Box::new(center_sphere));
     world.push(Box::new(ground_sphere));
     world.push(Box::new(left_sphere));
     world.push(Box::new(right_sphere));
