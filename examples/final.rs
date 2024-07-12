@@ -66,7 +66,7 @@ fn main() -> color_eyre::Result<()> {
     // Set up camera
     let camera = CameraBuilder::new()
         .image_width(1200)
-        .samples_per_pixel(100)
+        .samples_per_pixel(400)
         .max_depth(50)
         .fov(20.0)
         .with_orientation(
