@@ -33,7 +33,8 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
+    #[allow(clippy::too_many_arguments)]
+    fn new(
         aspect_ratio: f32,
         image_width: u32,
         samples_per_pixel: u32,
@@ -73,7 +74,7 @@ impl Camera {
         // Calculate the location of the upper left pixel.
         let viewport_upper_left =
             center - (focus_distance * w) - viewport_u / 2.0 - viewport_v / 2.0;
-        let pixel_00_loc = (viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v)).into();
+        let pixel_00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
         // Calculate the camera defocus disk basis vectors.
         let defocus_radius = focus_distance * degrees_to_radians(defocus_angle / 2.0).tan();
@@ -113,7 +114,7 @@ impl Camera {
                 let mut pixel_color = Color::black();
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&ray, self.max_depth, world);
+                    pixel_color += Self::ray_color(&ray, self.max_depth, world);
                 }
                 write!(writer, "{} ", self.pixel_samples_scale * pixel_color)?;
                 bar.inc(1);
@@ -148,15 +149,15 @@ impl Camera {
         self.center + p.x() * self.defocus_disk_u + p.y() * self.defocus_disk_v
     }
 
-    fn ray_color(&self, ray: &Ray, depth: u32, world: &World) -> Color {
-        if depth <= 0 {
+    fn ray_color(ray: &Ray, depth: u32, world: &World) -> Color {
+        if depth == 0 {
             return Color::black();
         }
         let interval = Interval::new(0.001, INFINITY);
         if let Some(hit_record) = world.hit(ray, interval) {
             // Hit record is cheap to clone. Only primitive types + a Rc.
             let (scattered, attenuation) = hit_record.material().scatter(ray, hit_record.clone());
-            return attenuation * self.ray_color(&scattered, depth - 1, world);
+            return attenuation * Self::ray_color(&scattered, depth - 1, world);
         }
         let unit_direction = ray.direction().unit();
         let a: f32 = 0.5 * (unit_direction.y() + 1.0);

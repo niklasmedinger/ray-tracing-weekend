@@ -50,7 +50,7 @@ impl HitRecord {
         // SAFETY: We assume that outward_normal has unit length.
         let front_face = ray.direction().dot(*outward_normal) < 0.0;
         let normal = if front_face {
-            outward_normal.clone()
+            *outward_normal
         } else {
             -*outward_normal
         };
@@ -100,7 +100,7 @@ impl Hittable for Sphere {
 
         let p = ray.at(root);
         let normal = (p - self.center) / self.radius;
-        Some(HitRecord::new(&ray, p, normal, root, self.material.clone()))
+        Some(HitRecord::new(ray, p, normal, root, self.material.clone()))
     }
 }
 
@@ -156,6 +156,7 @@ impl Hittable for Sphere {
 //     }
 // }
 
+#[derive(Default)]
 pub struct World(Vec<Box<dyn Hittable>>);
 
 impl World {
