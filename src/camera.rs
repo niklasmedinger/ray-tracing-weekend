@@ -1,5 +1,6 @@
-//! A module containing the camera code. See [Camera] for the implementation of
-//! the camera, see [CameraBuilder] for creating cameras.
+//! This module contains the camera code which renders the image.
+//! See [Camera] for the implementation of the camera, see [CameraBuilder]
+//! for creating cameras.
 use std::io::{BufWriter, Write};
 
 use indicatif::ProgressBar;

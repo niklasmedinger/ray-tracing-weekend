@@ -1,3 +1,6 @@
+//! This module implements a three dimensional vector [Vec3] and many linear
+//! algebra operations on it.
+
 use std::{
     f32,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},

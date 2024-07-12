@@ -1,3 +1,6 @@
+//! This module implements a [Point] in the coordinate system. A point is a
+//! thing wrapper around [Vec3].
+
 use std::{
     f32,
     ops::{Add, Sub},

@@ -27,26 +27,34 @@ use std::f32;
 use rand::{thread_rng, Rng};
 use vec3::Vec3;
 
-pub const INFINITY: f32 = std::f32::INFINITY;
-pub const NEG_INFINITY: f32 = std::f32::NEG_INFINITY;
-pub const PI: f32 = std::f32::consts::PI;
+/// Positive infinity for f32.
+pub const INFINITY: f32 = f32::INFINITY;
+/// Negative positive infinity for f32.
+pub const NEG_INFINITY: f32 = f32::NEG_INFINITY;
+/// Pi
+pub const PI: f32 = f32::consts::PI;
 
+/// Converts `degrees` to radians.
 pub fn degrees_to_radians(degrees: f32) -> f32 {
     degrees * PI / 180.0
 }
 
+/// Generates a random f32 in `[0.0, 1.0]`.
 pub fn random_0_1_f32() -> f32 {
     thread_rng().gen_range(0.0..1.0)
 }
 
+/// Generates a random f32 in `[min, max]`.
 pub fn random_f32(min: f32, max: f32) -> f32 {
     thread_rng().gen_range(min..max)
 }
 
+/// Generates a random vector where each component is in `[0, 0]`.
 pub fn random_0_1_vec3() -> Vec3 {
     Vec3::new(random_0_1_f32(), random_0_1_f32(), random_0_1_f32())
 }
 
+/// Generates a random vector where each component is in `[min, max]`.
 pub fn random_vec3(min: f32, max: f32) -> Vec3 {
     Vec3::new(
         random_f32(min, max),
@@ -55,6 +63,7 @@ pub fn random_vec3(min: f32, max: f32) -> Vec3 {
     )
 }
 
+/// Generates a random vector in the sphere with radius 1.0.
 pub fn random_in_unit_sphere() -> Vec3 {
     loop {
         let p = random_vec3(-1.0, 1.0);
@@ -64,10 +73,13 @@ pub fn random_in_unit_sphere() -> Vec3 {
     }
 }
 
+/// Generates a random unit vector.
 pub fn random_unit_vector() -> Vec3 {
     random_in_unit_sphere().unit()
 }
 
+/// Generates a random unit vector in the disk with radius 1.0. Note that the
+/// disk lies in the x and y plane.
 pub fn random_in_unit_disk() -> Vec3 {
     loop {
         let p = Vec3::new(random_f32(-1.0, 1.0), random_f32(-1.0, 1.0), 0.0);
@@ -75,24 +87,4 @@ pub fn random_in_unit_disk() -> Vec3 {
             return p;
         }
     }
-}
-
-pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
-    let on_unit_sphere = random_unit_vector();
-    if on_unit_sphere.dot(normal) > 0.0 {
-        on_unit_sphere
-    } else {
-        -on_unit_sphere
-    }
-}
-
-pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    v - 2.0 * v.dot(n) * n
-}
-
-pub fn refract(uv: Vec3, n: Vec3, eta_i_over_eta_t: f32) -> Vec3 {
-    let cos_theta = -uv.dot(n).min(1.0);
-    let r_out_perp = eta_i_over_eta_t * (uv + cos_theta * n);
-    let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
-    r_out_perp + r_out_parallel
 }

@@ -1,9 +1,23 @@
+//! This module defines a trait for [Material]s. [Materials] describe how a
+//! [Ray] is refracted by a surface. The module also contains the implementations
+//! for types that implement the material trait.
+
 use std::fmt::Debug;
 
 use crate::{
-    color::Color, hittable::HitRecord, random_0_1_f32, random_unit_vector, ray::Ray, reflect,
-    refract,
+    color::Color, hittable::HitRecord, random_0_1_f32, random_unit_vector, ray::Ray, vec3::Vec3,
 };
+
+fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * v.dot(n) * n
+}
+
+fn refract(uv: Vec3, n: Vec3, eta_i_over_eta_t: f32) -> Vec3 {
+    let cos_theta = -uv.dot(n).min(1.0);
+    let r_out_perp = eta_i_over_eta_t * (uv + cos_theta * n);
+    let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
+    r_out_perp + r_out_parallel
+}
 
 /// A trait that defines behavior that structs which can act as the surface
 /// material of objects in the world must implement.
@@ -74,6 +88,7 @@ impl Material for Metal {
 }
 
 #[derive(Clone, Copy, Debug)]
+/// A material that implements reflection by a dieletric material.
 pub struct Dielectric {
     /// Refractive index in vacuum or air, or the ratio of the material's refractive index over
     /// the refractive index of the enclosing media
@@ -81,6 +96,7 @@ pub struct Dielectric {
 }
 
 impl Dielectric {
+    /// Create a new material with a given refraction index.
     pub fn new(refraction_index: f32) -> Self {
         Self { refraction_index }
     }

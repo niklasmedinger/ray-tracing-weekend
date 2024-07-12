@@ -1,3 +1,6 @@
+//! This module defines the [Ray]s which are cast into the world and rendered
+//! onto the image.
+
 use crate::{point::Point, vec3::Vec3};
 
 #[derive(Debug, Copy, Clone)]

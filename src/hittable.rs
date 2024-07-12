@@ -1,3 +1,7 @@
+//! This module defines a trait for [Hittable] objects. I.e., objects which can
+//! be hit by a [Ray]. It also contains the implementations of our geometric
+//! primitives which implement [Hittable].
+
 use std::{
     fmt::Debug,
     ops::{Deref, DerefMut},
