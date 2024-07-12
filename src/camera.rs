@@ -3,7 +3,7 @@
 //! for creating cameras.
 use std::io::{BufWriter, Write};
 
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::{
     color::Color,
@@ -120,6 +120,13 @@ impl Camera {
         let stdout = std::io::stdout();
         // Create progress bar
         let bar = ProgressBar::new((self.image_height * self.image_width) as u64);
+
+        // Set the style of the progress bar
+        let style = ProgressStyle::default_bar()
+            .template("{msg} [{elapsed_precise}] [{wide_bar}] ({percent}% {eta_precise})")
+            .expect("Malformed progress bar template.");
+        bar.set_style(style);
+
         // Lock stdout for better writing performance.
         let mut writer = BufWriter::with_capacity(1024 * 64, stdout.lock());
         write!(
