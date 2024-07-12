@@ -1,3 +1,5 @@
+//! A module containing the camera code. See [Camera] for the implementation of
+//! the camera, see [CameraBuilder] for creating cameras.
 use std::io::{BufWriter, Write};
 
 use indicatif::ProgressBar;
@@ -14,21 +16,33 @@ use crate::{
     INFINITY,
 };
 
+/// A camera that views the world.
+#[derive(Debug, Clone, Copy)]
 pub struct Camera {
+    /// The width of the image we want to render.
     image_width: u32,
+    /// The height of the image we want to render.
     image_height: u32,
+    /// The amount of samples we sample per pixel for antialiasing.
     samples_per_pixel: u32,
+    /// The weight each sample has in the color computation of a pixel.
     pixel_samples_scale: f32,
+    /// The maximum amount of times the traycing of a [Ray] can recurse. I.e.,
+    /// how often a [Ray] can be scattered inside of the world.
     max_depth: u32,
+    /// The center of the camera.
     center: Point,
+    /// The location of the pixel with coordinates (0, 0) in the world.
     pixel_00_loc: Point,
+    /// The distance between each pixel in the x direction.
     pixel_delta_u: Vec3,
+    /// The distance between each pixel in the y direction.
     pixel_delta_v: Vec3,
-    /// Variation angle of rays through each pixel
+    /// The variation angle of rays through each pixel.
     defocus_angle: f32,
-    /// Defocus desk horizontal radius
+    /// The defocus desk horizontal radius.
     defocus_disk_u: Vec3,
-    /// Defocus desk vertical radius
+    /// The defocus desk vertical radius.
     defocus_disk_v: Vec3,
 }
 
@@ -97,6 +111,10 @@ impl Camera {
         }
     }
 
+    /// Render the [World] to stdout in the `.ppm` format. Note that this
+    /// function locks stdout and render a progress bar to stderr.
+    /// Yes, this is not behavior you want from a library function, but we will
+    /// only be consumed by our own applications :)
     pub fn render(&self, world: &World) -> std::io::Result<()> {
         let stdout = std::io::stdout();
         // Create progress bar
@@ -155,8 +173,7 @@ impl Camera {
         }
         let interval = Interval::new(0.001, INFINITY);
         if let Some(hit_record) = world.hit(ray, interval) {
-            // Hit record is cheap to clone. Only primitive types + a Rc.
-            let (scattered, attenuation) = hit_record.material().scatter(ray, hit_record.clone());
+            let (scattered, attenuation) = hit_record.material().scatter(ray, hit_record.copy());
             return attenuation * Self::ray_color(&scattered, depth - 1, world);
         }
         let unit_direction = ray.direction().unit();
@@ -165,6 +182,8 @@ impl Camera {
     }
 }
 
+/// A builder for [Camera].
+#[derive(Copy, Clone, Debug)]
 pub struct CameraBuilder {
     /// The aspect ratio for the [Camera].
     aspect_ratio: f32,
@@ -190,10 +209,13 @@ pub struct CameraBuilder {
 }
 
 impl CameraBuilder {
+    /// Construct a new, default builder.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Build a [Camera] from this builder. Note that this function does not
+    /// consume the builder.
     pub fn build(&self) -> Camera {
         Camera::new(
             self.aspect_ratio,
@@ -209,31 +231,42 @@ impl CameraBuilder {
         )
     }
 
+    /// Set the aspect ratio of the [Camera].
     pub fn aspect_ratio(&mut self, aspect_ratio: f32) -> &mut Self {
         self.aspect_ratio = aspect_ratio;
         self
     }
 
+    /// Set the image width of the [Camera].
     pub fn image_width(&mut self, image_width: u32) -> &mut Self {
         self.image_width = image_width;
         self
     }
 
+    /// Set the samples per pixel used by the [Camera] for antialiasing.
     pub fn samples_per_pixel(&mut self, samples_per_pixel: u32) -> &mut Self {
         self.samples_per_pixel = samples_per_pixel;
         self
     }
 
+    /// Set maximum amount of times the traycing of a [Ray] can recurse. I.e.,
+    /// how often a [Ray] can be scattered inside of the world.
     pub fn max_depth(&mut self, max_depth: u32) -> &mut Self {
         self.max_depth = max_depth;
         self
     }
 
+    /// Set the field of view of the [Camera].
     pub fn fov(&mut self, fov: f32) -> &mut Self {
         self.fov = fov;
         self
     }
 
+    /// Customize where the [Camera] is centered and where it looks to.
+    ///
+    /// * `look_from` - The origin the [Camera] is centered at.
+    /// * `look_at` - The [Point] the [Camera] is looking at.
+    /// * `vup` - The vector that defines camera-up. I.e., where up in the rendered image will be.
     pub fn with_orientation(&mut self, look_from: Point, look_at: Point, vup: Vec3) -> &mut Self {
         self.look_from = look_from;
         self.look_at = look_at;
@@ -241,6 +274,13 @@ impl CameraBuilder {
         self
     }
 
+    /// Customize defocus (also called depth of field) of the [Camera].
+    ///
+    /// * `defocus_angle` - The angle of the cone originating at the plane of
+    /// perfect focus with apex at the camera center.
+    /// A greater angle means a bigger radius of the defocus disc.
+    /// * `focus_distance` - The distance from the camera center to the plane of
+    /// perfect focus.
     pub fn with_defocus(&mut self, defocus_angle: f32, focus_distance: f32) -> &mut Self {
         self.defocus_angle = defocus_angle;
         self.focus_distance = focus_distance;

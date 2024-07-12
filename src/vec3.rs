@@ -6,42 +6,53 @@ use std::{
 use crate::point::Point;
 
 #[derive(Default, Copy, Clone, PartialEq, Debug)]
+/// A three dimensional vector in space.
 pub struct Vec3(f32, f32, f32);
 
 impl Vec3 {
+    /// Create a new vector from its x, y, and z component.
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self(x, y, z)
     }
 
+    /// Get the x component.
     pub fn x(&self) -> f32 {
         self.0
     }
 
+    /// Get the y component.
     pub fn y(&self) -> f32 {
         self.1
     }
 
+    /// Get the z component.
     pub fn z(&self) -> f32 {
         self.2
     }
 
+    /// Compute the length of the vector. I.e., `sqrt(x^2 + y^2 + z^2)`.
     pub fn length(&self) -> f32 {
         f32::sqrt(self.length_squared())
     }
 
+    /// Compute the square of the length of the vector. I.e., `x^2 + y^2 + z^2`.
     pub fn length_squared(&self) -> f32 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
     }
 
+    /// Returns true iff the vector is _near zero_. That is, each component
+    /// of the vector is smaller than `10e-8`.
     pub fn near_zero(&self) -> bool {
         let s = 1.0 / 10.0_f32.powi(8);
         self.0.abs() < s && self.1.abs() < s && self.2.abs() < s
     }
 
+    /// Compute the dot product of `self` with `other`.
     pub fn dot(&self, other: Vec3) -> f32 {
         self.0 * other.0 + self.1 * other.1 + self.2 * other.2
     }
 
+    /// Compute the cross product of `self` and `other`.
     pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3(
             self.1 * other.2 - self.2 * other.1,
@@ -50,6 +61,7 @@ impl Vec3 {
         )
     }
 
+    /// Return the unit vector that points in the same direction as `self`.
     pub fn unit(&self) -> Vec3 {
         *self / self.length()
     }

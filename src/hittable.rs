@@ -1,11 +1,16 @@
 use std::{
+    fmt::Debug,
     ops::{Deref, DerefMut},
     rc::Rc,
 };
 
 use crate::{interval::Interval, material::Material, point::Point, ray::Ray, vec3::Vec3};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
+/// A hit record contains information about where the [Ray] hit the surface,
+/// the normal vector from the surface, the [Material] of the surface, how far
+/// the ray travelled from its origin to hit the surface, and whether the ray
+/// hit the front face of the object.
 pub struct HitRecord {
     p: Point,
     normal: Vec3,
@@ -15,6 +20,12 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
+    /// Create a new [HitRecord].
+    ///
+    /// * `ray` - The [Ray] that hit a surface.
+    /// * `p` - The [Point] of intersection.
+    /// * `normal` - The surface normal vector. We assume this to have unit length!
+    /// * `t` - The `t` such that `ray(t) = ray.origin() = + t * ray.direction() = p`.
     pub fn new(ray: &Ray, p: Point, normal: Vec3, t: f32, material: Rc<dyn Material>) -> HitRecord {
         let (front_face, normal) = Self::face_normal(ray, &normal);
         HitRecord {
@@ -26,22 +37,43 @@ impl HitRecord {
         }
     }
 
+    /// Copy the record. Note that [HitRecord] cannot implement copy because
+    /// [Rc] is not [Copy]. We implement this method, in addition to
+    /// deriving [Clone], to make it explicit that this type is _cheap_ to copy.
+    pub fn copy(&self) -> Self {
+        Self {
+            p: self.p,
+            normal: self.normal,
+            material: Rc::clone(&self.material),
+            t: self.t,
+            front_face: self.front_face,
+        }
+    }
+
+    /// Return the [Point] `p` where the hit occured.
     pub fn p(&self) -> Point {
         self.p
     }
 
+    /// Return the vector normal to the surface that was hit.
     pub fn normal(&self) -> Vec3 {
         self.normal
     }
 
+    /// The `t` which solves `Ray(t) = p` for the [Ray] that hit the surface.
+    /// Note that the hit record does not have a reference to this ray. Thus,
+    /// the code that creates the record needs to keep the ray and record
+    /// associated.
     pub fn t(&self) -> f32 {
         self.t
     }
 
+    /// Returns true iff the the front face of the object was hit.
     pub fn front_face(&self) -> bool {
         self.front_face
     }
 
+    /// Return the material the surface is made of.
     pub fn material(&self) -> &dyn Material {
         self.material.as_ref()
     }
@@ -57,11 +89,20 @@ impl HitRecord {
         (front_face, normal)
     }
 }
-pub trait Hittable {
+
+/// A trait that defines the behavior objects that can be 'hit' by a [Ray]
+/// must implement.
+///
+/// We require that any implementor must also implement [Debug]. Yes, this is
+/// not how you would normally write library code, but this library is only
+/// consumed internally and we want everything to implement [Debug].
+pub trait Hittable: Debug {
+    /// Compute whether `ray` hit the `self` in [Interval] `ray_t`.
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
+/// A struct that implements a sphere in the world
 pub struct Sphere {
     center: Point,
     radius: f32,
@@ -69,11 +110,26 @@ pub struct Sphere {
 }
 
 impl Sphere {
+    /// Create a new sphere
+    ///
+    /// * `center` - The point where the sphere is centered.
+    /// * `radius` - The radius from the sphere's center to its surface.
     pub fn new(center: Point, radius: f32, material: Rc<dyn Material>) -> Self {
         Sphere {
             center,
             radius,
             material,
+        }
+    }
+
+    /// Copy the sphere. Note that [Sphere] cannot implement copy because
+    /// [Rc] is not [Copy]. We implement this method, in addition to
+    /// deriving [Clone], to make it explicit that this type is _cheap_ to copy.
+    pub fn copy(&self) -> Self {
+        Self {
+            center: self.center,
+            radius: self.radius,
+            material: Rc::clone(&self.material),
         }
     }
 }
@@ -156,10 +212,12 @@ impl Hittable for Sphere {
 //     }
 // }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
+/// A thing wrapper around a [Vec] of [Hittable]s.
 pub struct World(Vec<Box<dyn Hittable>>);
 
 impl World {
+    /// Create a new world.
     pub fn new() -> Self {
         Self(Vec::new())
     }

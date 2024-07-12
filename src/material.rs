@@ -1,17 +1,32 @@
+use std::fmt::Debug;
+
 use crate::{
     color::Color, hittable::HitRecord, random_0_1_f32, random_unit_vector, ray::Ray, reflect,
     refract,
 };
 
-pub trait Material {
+/// A trait that defines behavior that structs which can act as the surface
+/// material of objects in the world must implement.
+///
+/// We require that any implementor must also implement [Debug]. Yes, this is
+/// not how you would normally write library code, but this library is only
+/// consumed internally and we want everything to implement [Debug].
+pub trait Material: Debug {
+    // TODO: We currently always produce a scatter ray. Maybe return an Option
+    // to allow for absorbing the ray?
+    /// Compute the ray that is scattered away from the hit of the ray and
+    /// its attenuation as a [Color].
     fn scatter(&self, ray: &Ray, hit_record: HitRecord) -> (Ray, Color);
 }
 
+#[derive(Clone, Copy, Debug)]
+/// A material that produces scatter rays according to the lambertian distribution.
 pub struct Lambertian {
     albedo: Color,
 }
 
 impl Lambertian {
+    /// Create a new lambertian material from its color.
     pub fn new(albedo: Color) -> Self {
         Self { albedo }
     }
@@ -33,12 +48,17 @@ impl Material for Lambertian {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+/// A material that implements reflection by a metal material.
 pub struct Metal {
     albedo: Color,
     fuzz: f32,
 }
 
 impl Metal {
+    /// Create a new material with its color and a `fuzz` which randomizes
+    /// the reflection. A bigger `fuzz` means more deviation from the true
+    /// reflection.
     pub fn new(albedo: Color, fuzz: f32) -> Self {
         Self { albedo, fuzz }
     }
@@ -46,13 +66,14 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit_record: HitRecord) -> (Ray, Color) {
-        let reflected = crate::reflect(*ray.direction(), hit_record.normal());
+        let reflected = reflect(*ray.direction(), hit_record.normal());
         let reflected = reflected.unit() + (self.fuzz * random_unit_vector());
         let scattered = Ray::new(hit_record.p(), reflected);
         (scattered, self.albedo)
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct Dielectric {
     /// Refractive index in vacuum or air, or the ratio of the material's refractive index over
     /// the refractive index of the enclosing media

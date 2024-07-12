@@ -1,7 +1,17 @@
-use std::f32;
+//! A Rust implementation of ``Ray Tracing in One Weekend''.
 
-use rand::{thread_rng, Rng};
-use vec3::Vec3;
+#![forbid(unused_must_use)]
+#![warn(
+    missing_docs,
+    missing_debug_implementations,
+    missing_copy_implementations,
+    trivial_casts,
+    trivial_numeric_casts,
+    unsafe_code,
+    unstable_features,
+    unused_import_braces,
+    unused_qualifications
+)]
 
 pub mod camera;
 pub mod color;
@@ -11,6 +21,11 @@ pub mod material;
 pub mod point;
 pub mod ray;
 pub mod vec3;
+
+use std::f32;
+
+use rand::{thread_rng, Rng};
+use vec3::Vec3;
 
 pub const INFINITY: f32 = std::f32::INFINITY;
 pub const NEG_INFINITY: f32 = std::f32::NEG_INFINITY;

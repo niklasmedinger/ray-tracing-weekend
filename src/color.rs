@@ -1,3 +1,6 @@
+//! This module contains an implementation of RGB color, which is a thin wrapper
+//! around [Vec3].
+
 use std::{
     f32,
     ops::{Add, AddAssign, Mul, Sub, SubAssign},
@@ -6,16 +9,22 @@ use std::{
 use crate::{interval::COLOR_INTENSITY, vec3::Vec3};
 
 #[derive(Copy, Clone, Debug)]
+/// A struct that represents RGB colors.
 pub struct Color(Vec3);
 
 impl Color {
+    /// Create a new color from `r`, `g`, and `b` values in [0, 1].
+    /// The final value is then, for instance, computed as `r * 255`.
     pub fn new(r: f32, g: f32, b: f32) -> Self {
         Color(Vec3::new(r, g, b))
     }
+
+    /// The black color.
     pub fn black() -> Self {
         Color(Vec3::new(0.0, 0.0, 0.0))
     }
 
+    /// The white color.
     pub fn white() -> Self {
         Color(Vec3::new(1.0, 1.0, 1.0))
     }
