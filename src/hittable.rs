@@ -8,7 +8,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{interval::Interval, material::Material, point::Point, ray::Ray, vec3::Vec3};
+use crate::{interval::Interval, material::Material, point::Point, ray::Ray, vec3::Unit3};
 
 #[derive(Clone, Debug)]
 /// A hit record contains information about where the [Ray] hit the surface,
@@ -17,7 +17,7 @@ use crate::{interval::Interval, material::Material, point::Point, ray::Ray, vec3
 /// hit the front face of the object.
 pub struct HitRecord {
     p: Point,
-    normal: Vec3,
+    normal: Unit3,
     material: Rc<dyn Material>,
     t: f32,
     front_face: bool,
@@ -30,8 +30,14 @@ impl HitRecord {
     /// * `p` - The [Point] of intersection.
     /// * `normal` - The surface normal vector. We assume this to have unit length!
     /// * `t` - The `t` such that `ray(t) = ray.origin() = + t * ray.direction() = p`.
-    pub fn new(ray: &Ray, p: Point, normal: Vec3, t: f32, material: Rc<dyn Material>) -> HitRecord {
-        let (front_face, normal) = Self::face_normal(ray, &normal);
+    pub fn new(
+        ray: &Ray,
+        p: Point,
+        normal: Unit3,
+        t: f32,
+        material: Rc<dyn Material>,
+    ) -> HitRecord {
+        let (front_face, normal) = Self::face_normal(ray, normal);
         HitRecord {
             p,
             normal,
@@ -60,7 +66,7 @@ impl HitRecord {
     }
 
     /// Return the vector normal to the surface that was hit.
-    pub fn normal(&self) -> Vec3 {
+    pub fn normal(&self) -> Unit3 {
         self.normal
     }
 
@@ -82,13 +88,13 @@ impl HitRecord {
         self.material.as_ref()
     }
 
-    fn face_normal(ray: &Ray, outward_normal: &Vec3) -> (bool, Vec3) {
+    fn face_normal(ray: &Ray, outward_normal: Unit3) -> (bool, Unit3) {
         // SAFETY: We assume that outward_normal has unit length.
-        let front_face = ray.direction().dot(*outward_normal) < 0.0;
+        let front_face = ray.direction().dot(outward_normal.as_vec3()) < 0.0;
         let normal = if front_face {
-            *outward_normal
+            outward_normal
         } else {
-            -*outward_normal
+            -outward_normal
         };
         (front_face, normal)
     }
@@ -160,6 +166,10 @@ impl Hittable for Sphere {
 
         let p = ray.at(root);
         let normal = (p - self.center) / self.radius;
+        // SAFETY: `normal` is the vector from the center of the sphere to the
+        // point where the ray intersected the spheres surface. Thus, dividing
+        // by the radius ensures it is of unit length.
+        let normal = Unit3::new_unchecked(normal);
         Some(HitRecord::new(ray, p, normal, root, self.material.clone()))
     }
 }

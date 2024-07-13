@@ -65,8 +65,8 @@ impl Vec3 {
     }
 
     /// Return the unit vector that points in the same direction as `self`.
-    pub fn unit(&self) -> Vec3 {
-        *self / self.length()
+    pub fn unit(&self) -> Unit3 {
+        Unit3::new_normalize(*self)
     }
 }
 
@@ -167,6 +167,41 @@ impl Neg for Vec3 {
 impl std::fmt::Display for Vec3 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {} {}", self.0, self.1, self.2)
+    }
+}
+
+/// A three dimensional vector with unit length.
+#[derive(Copy, Debug, Clone)]
+pub struct Unit3(Vec3);
+
+impl Unit3 {
+    /// Creates a new normal vector pointing in the same direction as `v`.
+    pub fn new_normalize(v: Vec3) -> Self {
+        Unit3(v / v.length())
+    }
+
+    /// Creates a new normal vector pointing in the same direction as `v`.
+    /// Does not normalize `v` but assumes that it is already a unit vector.
+    pub fn new_unchecked(v: Vec3) -> Self {
+        Unit3(v)
+    }
+
+    /// Retrieves the underlying [Vec3].
+    pub fn as_vec3(&self) -> Vec3 {
+        self.0
+    }
+
+    /// Consumes the unit vector and retrieves the underlying [Vec3].
+    pub fn into_inner(self) -> Vec3 {
+        self.0
+    }
+}
+
+impl Neg for Unit3 {
+    type Output = Unit3;
+
+    fn neg(self) -> Self::Output {
+        Unit3(-self.0)
     }
 }
 

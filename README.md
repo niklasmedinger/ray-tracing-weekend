@@ -34,6 +34,8 @@ Here a few selected scenes from the book series rendered with this implementatio
 |:--:|
 | *The final scene of the first book.* |
 
+</p>
+
 ## Future README content
 - How to 'use' the repository. I.e., install rust + clone + run examples.
 - The layout of this repository.

@@ -25,7 +25,7 @@ pub mod vec3;
 use std::f32;
 
 use rand::{thread_rng, Rng};
-use vec3::Vec3;
+use vec3::{Unit3, Vec3};
 
 /// Positive infinity for f32.
 pub const INFINITY: f32 = f32::INFINITY;
@@ -74,7 +74,7 @@ pub fn random_in_unit_sphere() -> Vec3 {
 }
 
 /// Generates a random unit vector.
-pub fn random_unit_vector() -> Vec3 {
+pub fn random_unit_vector() -> Unit3 {
     random_in_unit_sphere().unit()
 }
 

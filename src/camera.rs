@@ -74,8 +74,8 @@ impl Camera {
         let viewport_width: f32 = viewport_height * (image_width as f32 / image_height as f32);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
-        let w = (look_from - look_at).unit();
-        let u = (vup.cross(w)).unit();
+        let w = (look_from - look_at).unit().as_vec3();
+        let u = (vup.cross(w)).unit().as_vec3();
         let v = w.cross(u);
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges
@@ -185,7 +185,7 @@ impl Camera {
             return attenuation * Self::ray_color(&scattered, depth - 1, world);
         }
         let unit_direction = ray.direction().unit();
-        let a: f32 = 0.5 * (unit_direction.y() + 1.0);
+        let a: f32 = 0.5 * (unit_direction.as_vec3().y() + 1.0);
         (1.0 - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0)
     }
 }
