@@ -1,7 +1,9 @@
 # Ray Tracing in One Weekend
-This is my Rust implementation of the ray tracer developed in the [_Ray Tracing in One Weekend_](https://raytracing.github.io/) book series.
+This is my Rust implementation of the ray tracer developed in the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book series.
 
 ## Rendered Scenes
+
+Here a few selected scenes from the book series rendered with this implementation.
 
 | ![image](./assets/metal.png) |
 |:--:|
