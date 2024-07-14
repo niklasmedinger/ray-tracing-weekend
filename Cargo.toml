@@ -14,3 +14,7 @@ criterion = "0.5.1"
 [[bench]]
 name = "dielectric"
 harness = false
+
+[[bench]]
+name = "grid"
+harness = false
