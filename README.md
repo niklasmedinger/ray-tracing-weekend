@@ -1,3 +1,5 @@
+[![CI testing](https://github.com/niklasmedinger/ray-tracing-weekend/actions/workflows/CI.yml/badge.svg)](https://github.com/niklasmedinger/ray-tracing-weekend/actions/workflows/CI.yml)
+
 # Ray Tracing in One Weekend
 This is my Rust implementation of the ray tracer developed in the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book series.
 
@@ -34,8 +36,13 @@ Here a few selected scenes from the book series rendered with this implementatio
 |:--:|
 | *The final scene of the first book.* |
 
-</p>
-
-## Future README content
-- How to 'use' the repository. I.e., install rust + clone + run examples.
-- The layout of this repository.
+To render the scenes yourself, install [Rust](https://www.rust-lang.org/tools/install) and use
+```
+cargo run --example scene > scene.ppm --release
+```
+to render the file `scene` in the example folder into the file `scene.ppm`.
+Take a look at the `./examples` folder for sample scenes. Use an image viewer of your choice
+which can view `.ppm` files or, if you have ImageMagick installed, convert them to `.png` files via
+```
+convert scene.ppm scene.png
+```
