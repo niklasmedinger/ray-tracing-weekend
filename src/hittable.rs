@@ -169,11 +169,19 @@ impl Sphere {
             center_vec: self.center_vec,
         }
     }
+
+    fn sphere_center(&self, at_time: f32) -> Point {
+        // Linearly interpolate from center to moves_to according to time, where t=0 yields
+        // center1, and t=1 yields center2.
+        self.center_vec
+            .map_or(self.center, |v| self.center + at_time * v)
+    }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        let oc = self.center - *ray.origin();
+        let center = self.sphere_center(ray.time());
+        let oc = center - *ray.origin();
         let a = ray.direction().length_squared();
         let h = ray.direction().dot(oc);
         let c = oc.length_squared() - self.radius * self.radius;
