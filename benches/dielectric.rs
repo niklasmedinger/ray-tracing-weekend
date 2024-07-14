@@ -1,35 +1,27 @@
-use std::{
-    io::{stdout, BufWriter},
-    rc::Rc,
-};
+use std::rc::Rc;
 
-use color_eyre::eyre::Context;
+use criterion::{criterion_group, criterion_main, Criterion};
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
     hittable::{Sphere, World},
-    material::{Lambertian, Metal},
+    material::{Dielectric, Lambertian, Metal},
     point::Point,
-    vec3::Vec3,
 };
 
-fn main() -> color_eyre::Result<()> {
-    color_eyre::install()?;
-    // Default camera
-    let look_from = Point::new(-2.0, 2.0, 1.0);
-    let look_at = Point::new(0.0, 0.0, -1.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
+pub fn dieletric(c: &mut Criterion) {
     let camera = CameraBuilder::default()
-        .with_orientation(look_from, look_at, vup)
-        .fov(20.0)
-        .with_defocus(5.0, 4.0)
+        .image_width(200)
+        .samples_per_pixel(10)
+        .max_depth(10)
+        .hide_progress(true)
         .build();
 
     // Materials
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
+    let material_right = Rc::new(Dielectric::new(1.0 / 1.33));
 
     // Objects in the world
     let ground_sphere = Sphere::new(
@@ -49,11 +41,11 @@ fn main() -> color_eyre::Result<()> {
     world.push(Box::new(right_sphere));
 
     // Render
-    let inner = stdout().lock();
-    let writer = BufWriter::with_capacity(1024 * 32, inner);
-    camera
-        .render(&world, writer)
-        .wrap_err("Failed to render image.")?;
-
-    Ok(())
+    let writer = std::io::sink();
+    c.bench_function("dielectric scene", |b| {
+        b.iter(|| camera.render(&world, writer).expect("Failed to render."))
+    });
 }
+
+criterion_group!(benches, dieletric);
+criterion_main!(benches);

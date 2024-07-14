@@ -1,4 +1,7 @@
-use std::rc::Rc;
+use std::{
+    io::{stdout, BufWriter},
+    rc::Rc,
+};
 
 use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
@@ -32,7 +35,11 @@ fn main() -> color_eyre::Result<()> {
     world.push(Box::new(sphere2));
 
     // Render
-    camera.render(&world).wrap_err("Failed to render image.")?;
+    let inner = stdout().lock();
+    let writer = BufWriter::with_capacity(1024 * 32, inner);
+    camera
+        .render(&world, writer)
+        .wrap_err("Failed to render image.")?;
 
     Ok(())
 }

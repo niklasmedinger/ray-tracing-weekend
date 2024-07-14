@@ -1,7 +1,7 @@
 //! This module contains the camera code which renders the image.
 //! See [Camera] for the implementation of the camera, see [CameraBuilder]
 //! for creating cameras.
-use std::io::{BufWriter, Write};
+use std::{fmt::Debug, io::Write};
 
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -18,7 +18,7 @@ use crate::{
 };
 
 /// A camera that views the world.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct Camera {
     /// The width of the image we want to render.
     image_width: u32,
@@ -45,6 +45,8 @@ pub struct Camera {
     defocus_disk_u: Vec3,
     /// The defocus desk vertical radius.
     defocus_disk_v: Vec3,
+    /// Toggle to hide the progress bar.
+    hide_progress: bool,
 }
 
 impl Camera {
@@ -60,6 +62,7 @@ impl Camera {
         vup: Vec3,
         defocus_angle: f32,
         focus_distance: f32,
+        hide_progress: bool,
     ) -> Self {
         // Calculate image height
         let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
@@ -109,17 +112,21 @@ impl Camera {
             defocus_disk_u,
             defocus_disk_v,
             defocus_angle,
+            hide_progress,
         }
     }
 
     /// Render the [World] to stdout in the `.ppm` format. Note that this
-    /// function locks stdout and render a progress bar to stderr.
+    /// renders a progress bar to stderr.
     /// Yes, this is not behavior you want from a library function, but we will
     /// only be consumed by our own applications :)
-    pub fn render(&self, world: &World) -> std::io::Result<()> {
-        let stdout = std::io::stdout();
+    pub fn render(&self, world: &World, mut writer: impl Write) -> std::io::Result<()> {
         // Create progress bar
-        let bar = ProgressBar::new((self.image_height * self.image_width) as u64);
+        let bar = if self.hide_progress {
+            ProgressBar::hidden()
+        } else {
+            ProgressBar::new((self.image_height * self.image_width) as u64)
+        };
 
         // Set the style of the progress bar
         let style = ProgressStyle::default_bar()
@@ -127,8 +134,6 @@ impl Camera {
             .expect("Malformed progress bar template.");
         bar.set_style(style);
 
-        // Lock stdout for better writing performance.
-        let mut writer = BufWriter::with_capacity(1024 * 64, stdout.lock());
         write!(
             writer,
             "P3\n{} {}\n255\n",
@@ -192,7 +197,7 @@ impl Camera {
 }
 
 /// A builder for [Camera].
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct CameraBuilder {
     /// The aspect ratio for the [Camera].
     aspect_ratio: f32,
@@ -211,10 +216,12 @@ pub struct CameraBuilder {
     look_at: Point,
     /// The [Vec3] that is considered `up` by the [Camera].
     vup: Vec3,
-    /// Variation angle of rays through each pixel
+    /// Variation angle of rays through each pixel.
     defocus_angle: f32,
-    /// Distance from camera look_from point to plane of perfect focus
+    /// Distance from camera look_from point to plane of perfect focus.
     focus_distance: f32,
+    /// Toggle to hide the progress bar.
+    hide_progress: bool,
 }
 
 impl CameraBuilder {
@@ -223,9 +230,8 @@ impl CameraBuilder {
         Self::default()
     }
 
-    /// Build a [Camera] from this builder. Note that this function does not
-    /// consume the builder.
-    pub fn build(&self) -> Camera {
+    /// Build a [Camera] from this builder.
+    pub fn build(self) -> Camera {
         Camera::new(
             self.aspect_ratio,
             self.image_width,
@@ -237,6 +243,7 @@ impl CameraBuilder {
             self.vup,
             self.defocus_angle,
             self.focus_distance,
+            self.hide_progress,
         )
     }
 
@@ -268,6 +275,12 @@ impl CameraBuilder {
     /// Set the field of view of the [Camera].
     pub fn fov(&mut self, fov: f32) -> &mut Self {
         self.fov = fov;
+        self
+    }
+
+    /// Set the field of view of the [Camera].
+    pub fn hide_progress(&mut self, hide_progress: bool) -> &mut Self {
+        self.hide_progress = hide_progress;
         self
     }
 
@@ -310,6 +323,7 @@ impl Default for CameraBuilder {
             vup: Vec3::new(0.0, 1.0, 0.0),
             defocus_angle: 0.0,
             focus_distance: 10.0,
+            hide_progress: false,
         }
     }
 }
