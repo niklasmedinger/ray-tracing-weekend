@@ -15,7 +15,7 @@ Here a few selected scenes from the book series rendered with this implementatio
 
 | ![image](./assets/hollow_glass.png) |
 |:--:|
-| *A scene with a lambertian sphere in the center, a  metal spheres on the left, and a dieletric sphere on the right. The dieletric sphere contains another dieletric sphere, modelling a hollow glass sphere with air inside.* |
+| *A scene with a lambertian sphere in the center, a  metal sphere on the left, and a dieletric sphere on the right. The dieletric sphere contains another dieletric sphere, modelling a hollow glass sphere with air inside.* |
 
 --------------------------------------------------------------------------------
 
@@ -42,7 +42,8 @@ cargo run --example scene > scene.ppm --release
 ```
 to render the file `scene` in the example folder into the file `scene.ppm`.
 Take a look at the `./examples` folder for sample scenes. Use an image viewer of your choice
-which can view `.ppm` files or, if you have ImageMagick installed, convert them to `.png` files via
+which can view `.ppm` files or, if you have `convert` from [ImageMagick](https://imagemagick.org/script/convert.php) installed,
+convert them to `.png` files via
 ```
 convert scene.ppm scene.png
 ```
