@@ -8,12 +8,27 @@ use crate::{point::Point, vec3::Vec3};
 pub struct Ray {
     origin: Point,
     direction: Vec3,
+    _time: f32,
 }
 
 impl Ray {
-    /// Create a new ray from an origin and a direction.
+    /// Creates a new ray from an origin and a direction.
     pub fn new(origin: Point, direction: Vec3) -> Self {
-        Self { origin, direction }
+        Self {
+            origin,
+            direction,
+            _time: 0.0,
+        }
+    }
+
+    /// Creates a new ray from an origin, a direction, and a time at which the
+    /// ray was cast. We assume `time` is in the interval `[0.0, 1.0]`.
+    pub fn new_with_time(origin: Point, direction: Vec3, time: f32) -> Self {
+        Self {
+            origin,
+            direction,
+            _time: time,
+        }
     }
 
     /// Get the origin of the point.

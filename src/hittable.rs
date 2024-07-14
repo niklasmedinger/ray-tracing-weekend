@@ -8,7 +8,13 @@ use std::{
     rc::Rc,
 };
 
-use crate::{interval::Interval, material::Material, point::Point, ray::Ray, vec3::Unit3};
+use crate::{
+    interval::Interval,
+    material::Material,
+    point::Point,
+    ray::Ray,
+    vec3::{Unit3, Vec3},
+};
 
 #[derive(Clone, Debug)]
 /// A hit record contains information about where the [Ray] hit the surface,
@@ -115,6 +121,7 @@ pub trait Hittable: Debug {
 /// A struct that implements a sphere in the world
 pub struct Sphere {
     center: Point,
+    center_vec: Option<Vec3>,
     radius: f32,
     material: Rc<dyn Material>,
 }
@@ -127,6 +134,25 @@ impl Sphere {
     pub fn new(center: Point, radius: f32, material: Rc<dyn Material>) -> Self {
         Sphere {
             center,
+            center_vec: None,
+            radius,
+            material,
+        }
+    }
+
+    /// Create a new sphere
+    ///
+    /// * `center` - The point where the sphere is centered.
+    /// * `radius` - The radius from the sphere's center to its surface.
+    pub fn new_moving(
+        center: Point,
+        radius: f32,
+        material: Rc<dyn Material>,
+        moves_to: Point,
+    ) -> Self {
+        Sphere {
+            center,
+            center_vec: Some(moves_to - center),
             radius,
             material,
         }
@@ -140,6 +166,7 @@ impl Sphere {
             center: self.center,
             radius: self.radius,
             material: Rc::clone(&self.material),
+            center_vec: self.center_vec,
         }
     }
 }
