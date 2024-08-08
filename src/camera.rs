@@ -299,10 +299,10 @@ impl CameraBuilder {
     /// Customize defocus (also called depth of field) of the [Camera].
     ///
     /// * `defocus_angle` - The angle of the cone originating at the plane of
-    /// perfect focus with apex at the camera center.
-    /// A greater angle means a bigger radius of the defocus disc.
+    ///    perfect focus with apex at the camera center.
+    ///    A greater angle means a bigger radius of the defocus disc.
     /// * `focus_distance` - The distance from the camera center to the plane of
-    /// perfect focus.
+    ///    perfect focus.
     pub fn with_defocus(&mut self, defocus_angle: f32, focus_distance: f32) -> &mut Self {
         self.defocus_angle = defocus_angle;
         self.focus_distance = focus_distance;
