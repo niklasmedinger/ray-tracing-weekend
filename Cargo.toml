@@ -10,9 +10,14 @@ rand = { version = "0.8.5" }
 [dev-dependencies]
 color-eyre = "0.6.3"
 criterion = "0.5.1"
+iai = "0.1"
 
 [[bench]]
-name = "dielectric"
+name = "iai_dielectric"
+harness = false
+
+[[bench]]
+name = "criterion_dielectric"
 harness = false
 
 [[bench]]

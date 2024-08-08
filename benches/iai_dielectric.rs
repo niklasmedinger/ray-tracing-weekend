@@ -1,6 +1,5 @@
 use std::rc::Rc;
 
-use criterion::{criterion_group, criterion_main, Criterion};
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
@@ -9,7 +8,7 @@ use ray_tracing_weekend::{
     point::Point,
 };
 
-pub fn dieletric(c: &mut Criterion) {
+pub fn dielectric() {
     let camera = CameraBuilder::default()
         .image_width(200)
         .samples_per_pixel(10)
@@ -42,10 +41,7 @@ pub fn dieletric(c: &mut Criterion) {
 
     // Render
     let writer = std::io::sink();
-    c.bench_function("dielectric scene", |b| {
-        b.iter(|| camera.render(&world, writer).expect("Failed to render."))
-    });
+    camera.render(&world, writer).expect("Failed to render.");
 }
 
-criterion_group!(benches, dieletric);
-criterion_main!(benches);
+iai::main!(dielectric);
