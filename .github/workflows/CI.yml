@@ -1,9 +1,8 @@
 name: Rust
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
 
 env:
@@ -55,5 +54,7 @@ jobs:
         with:
           fetch-depth: 2
       - run: git checkout HEAD^
+      - run: cargo bench
+      - uses: actions/checkout@v4
       - run: cargo bench
 
