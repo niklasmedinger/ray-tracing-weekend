@@ -55,6 +55,6 @@ jobs:
           fetch-depth: 2
       - run: git checkout HEAD^
       - run: cargo bench
-      - uses: actions/checkout@v4
+      - run: git checkout ${{ github.head_ref }}
       - run: cargo bench
 
