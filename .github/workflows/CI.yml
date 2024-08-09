@@ -57,5 +57,4 @@ jobs:
       - name: Benchmark parent commit
       - run: git checkout HEAD^
       - run: cargo bench
-      - name: Benchmark current commit
 
