@@ -49,5 +49,5 @@ convert scene.ppm scene.png
 ```
 
 ## Benchmarking
-TODO: Describe benchmarking infrastructure, i.e., criterion + iai + github action.
-TODO: Setup bencher project to have continuous statistical benchmarking?
+* TODO: Describe benchmarking infrastructure, i.e., criterion + iai + github action.
+* TODO: Setup bencher project to have continuous statistical benchmarking?
