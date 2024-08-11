@@ -1,3 +1,5 @@
+name: Bencher CI
+
 on:
   push:
     branches: main
@@ -9,7 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: bencherdev/bencher@main
-      - name: Track base branch benchmarks with Bencher
+      - uses: Swatinem/rust-cache@v2
+      - name: Track base branch criterion benchmarks with Bencher
         run: |
           bencher run \
           --project raytracing-weekend \
@@ -19,3 +22,13 @@ jobs:
           --adapter rust_criterion \
           --err \
           "cargo bench --bench criterion_grid --bench criterion_dielectric"
+      - name: Track base branch iai benchmarks with Bencher
+        run: |
+          bencher run \
+          --project raytracing-weekend \
+          --token '${{ secrets.BENCHER_API_TOKEN }}' \
+          --branch main \
+          --testbed ubuntu-latest \
+          --adapter rust_iai \
+          --err \
+          "cargo bench --bench iai_grid --bench iai_dielectric"
