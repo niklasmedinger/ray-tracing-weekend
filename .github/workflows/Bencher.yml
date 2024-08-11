@@ -9,6 +9,8 @@ jobs:
     name: Continuous Benchmarking with Bencher
     runs-on: ubuntu-latest
     steps:
+      - name: Install Valgrind
+        run: sudo apt-get -y install valgrind
       - uses: actions/checkout@v4
       - uses: bencherdev/bencher@main
       - uses: Swatinem/rust-cache@v2
