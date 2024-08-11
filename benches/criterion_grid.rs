@@ -58,7 +58,7 @@ pub fn grid(c: &mut Criterion) {
 
     // Render
     let writer = std::io::sink();
-    c.bench_function("grid of spheres scene", |b| {
+    c.bench_function("criterion_grid_scene", |b| {
         b.iter(|| camera.render(&world, writer).expect("Failed to render."))
     });
 }

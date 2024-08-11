@@ -17,6 +17,10 @@ name = "iai_dielectric"
 harness = false
 
 [[bench]]
+name = "iai_grid"
+harness = false
+
+[[bench]]
 name = "criterion_dielectric"
 harness = false
 

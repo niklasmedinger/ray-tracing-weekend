@@ -42,7 +42,7 @@ pub fn dielectric(c: &mut Criterion) {
 
     // Render
     let writer = std::io::sink();
-    c.bench_function("dielectric scene", |b| {
+    c.bench_function("criterion_dielectric_scene", |b| {
         b.iter(|| camera.render(&world, writer).expect("Failed to render."))
     });
 }

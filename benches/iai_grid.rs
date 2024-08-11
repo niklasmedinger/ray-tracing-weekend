@@ -10,7 +10,7 @@ use ray_tracing_weekend::{
     PI,
 };
 
-pub fn grid() {
+pub fn iai_grid_scene() {
     // Camera
     let look_from = Point::new(0.0, 5.0, 0.0);
     let look_at = Point::new(0.0, 0.0, 0.0);
@@ -60,4 +60,4 @@ pub fn grid() {
     camera.render(&world, writer).expect("Failed to render.");
 }
 
-iai::main!(grid);
+iai::main!(iai_grid_scene);
