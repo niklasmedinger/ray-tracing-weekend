@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use criterion::{criterion_group, criterion_main, Criterion};
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
@@ -8,7 +9,7 @@ use ray_tracing_weekend::{
     point::Point,
 };
 
-pub fn iai_dielectric_pixel() {
+pub fn dielectric(c: &mut Criterion) {
     let camera = CameraBuilder::default()
         .image_width(200)
         .samples_per_pixel(10)
@@ -40,7 +41,10 @@ pub fn iai_dielectric_pixel() {
     world.push(Box::new(right_sphere));
 
     // Render
-    camera.render_pixel(&world, 100, 100);
+    c.bench_function("criterion_dielectric_pixel", |b| {
+        b.iter(|| camera.render_pixel(&world, 100, 100))
+    });
 }
 
-iai::main!(iai_dielectric_pixel);
+criterion_group!(benches, dielectric);
+criterion_main!(benches);

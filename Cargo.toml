@@ -21,9 +21,25 @@ name = "iai_grid"
 harness = false
 
 [[bench]]
+name = "iai_dielectric_pixel"
+harness = false
+
+[[bench]]
+name = "iai_grid_pixel"
+harness = false
+
+[[bench]]
 name = "criterion_dielectric"
 harness = false
 
 [[bench]]
+name = "criterion_dielectric_pixel"
+harness = false
+
+[[bench]]
 name = "criterion_grid"
+harness = false
+
+[[bench]]
+name = "criterion_grid_pixel"
 harness = false

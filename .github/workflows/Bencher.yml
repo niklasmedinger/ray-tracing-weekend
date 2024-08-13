@@ -22,7 +22,7 @@ jobs:
           --testbed ubuntu-latest \
           --adapter rust_criterion \
           --err \
-          "cargo bench --bench criterion_grid --bench criterion_dielectric"
+          "cargo bench --bench criterion_grid --bench criterion_dielectric --bench criterion_grid_pixel --bench criterion_dielectric_pixel"
       - name: Track base branch iai benchmarks with Bencher
         run: |
           bencher run \
@@ -32,4 +32,4 @@ jobs:
           --testbed ubuntu-latest \
           --adapter rust_iai \
           --err \
-          "cargo bench --bench iai_grid --bench iai_dielectric"
+          "cargo bench --bench iai_grid --bench iai_dielectric --bench iai_grid_pixel --bench iai_dielectric_pixel"

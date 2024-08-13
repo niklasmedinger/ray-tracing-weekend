@@ -119,7 +119,7 @@ impl Camera {
     /// Render the [World] to stdout in the `.ppm` format. Note that this
     /// renders a progress bar to stderr.
     /// Yes, this is not behavior you want from a library function, but we will
-    /// only be consumed by our own applications :)
+    /// only be consumed by our own `applications' :)
     pub fn render(&self, world: &World, mut writer: impl Write) -> std::io::Result<()> {
         // Create progress bar
         let bar = if self.hide_progress {
@@ -142,17 +142,23 @@ impl Camera {
 
         for j in 0..self.image_height {
             for i in 0..self.image_width {
-                let mut pixel_color = Color::black();
-                for _ in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&ray, self.max_depth, world);
-                }
-                write!(writer, "{} ", self.pixel_samples_scale * pixel_color)?;
+                let color = self.render_pixel(world, i, j);
+                write!(writer, "{} ", self.pixel_samples_scale * color)?;
                 bar.inc(1);
             }
         }
         bar.finish_and_clear();
         Ok(())
+    }
+
+    /// Render the single pixel at position `x` and `y`.
+    pub fn render_pixel(&self, world: &World, x: u32, y: u32) -> Color {
+        let mut pixel_color = Color::black();
+        for _ in 0..self.samples_per_pixel {
+            let ray = self.get_ray(x, y);
+            pixel_color += Self::ray_color(&ray, self.max_depth, world);
+        }
+        pixel_color
     }
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
