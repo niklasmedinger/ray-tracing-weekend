@@ -13,11 +13,11 @@ criterion = "0.5.1"
 iai = "0.1"
 
 [[bench]]
-name = "iai_dielectric"
+name = "iai_dielectric_scene"
 harness = false
 
 [[bench]]
-name = "iai_grid"
+name = "iai_grid_scene"
 harness = false
 
 [[bench]]
@@ -29,7 +29,7 @@ name = "iai_grid_pixel"
 harness = false
 
 [[bench]]
-name = "criterion_dielectric"
+name = "criterion_dielectric_scene"
 harness = false
 
 [[bench]]
@@ -37,7 +37,7 @@ name = "criterion_dielectric_pixel"
 harness = false
 
 [[bench]]
-name = "criterion_grid"
+name = "criterion_grid_scene"
 harness = false
 
 [[bench]]

@@ -81,14 +81,26 @@ another benchmarking tool I'm exploring in this project.
 To bench the ray tracer, I'm using two macro benchmarks and two micro benchmarks:
 * A complete render of the [_hollow\_glass_](./examples/hollow_glass.rs) scene.
 * A complete render of a grid of spheres.
-* TODO: A single pixel from the [_hollow\_glass_](./examples/hollow_glass.rs) scene.
-* TODO: A single pixel from the grid of spheres scene.
+* A single pixel from the [_hollow\_glass_](./examples/hollow_glass.rs) scene.
+* A single pixel from the grid of spheres scene.
 See the [benches folder](./benches/) for the code of these benchmarks. Each
 benchmark is executed with both Criterion and Iai.
 
-TODO: Paragraph about comparing two consecutive commits via actions.
+To benchmark the code changes to the project, I use two approaches: 1) Relative
+Continuous Benchmarking, and 2) Continuous statistical benchmarking. For 1),
+I'm simply using Github Actions to checkout the current commit as well as its parent,
+and then I first benchmark the parent and then compare it to the benchmarks of the
+current commit. See [`CI.yml`](./.github/workflows/CI.yml). For 2),
+I'm using [Bencher](https://github.com/bencherdev/bencher): A suite of continuous
+benchmarking tools. Again, I'm using an [action](./.github/workflows/Bencher.yml)
+to checkout my code and then use Bencher to execute my benchmarks on their
+infrastructure. For each of the
+benchmarks, Bencher tracks its results over time and is even able to issue
+warnings should a degression occur. Here, you can see the projects [perf page](https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&report=ea8be702-fa4d-47df-9022-29dbdcc432af&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2C59bc6a68-248b-4f43-b79f-3d43bc4182be%2Ceeaef59b-700a-487e-9398-e3f1be99addd%2Caf955bb8-4aea-4f96-a726-e897781ab2b6&measures=dc59b5b0-d80d-485f-aa42-461f4fc4d0e3&start_time=1720967964000&end_time=1723559972000&clear=true).
 
-TODO: Paragraph about continuous statistical benchmarking via Bencher.
-
-Here, you can see the benchmarking results over time for this project.
-<a href="https://bencher.dev/perf/raytracing-weekend?lower_value=false&upper_value=false&lower_boundary=false&upper_boundary=false&x_axis=date_time&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=584d3db9-2f38-4302-8c61-83db3d791bb1%2C5cca1689-0371-4dde-a031-89a8b3b9b5a1&measures=bd087070-50c6-40ff-aede-60d4fb58e39a&start_time=1723390191794&end_time=1723391190794&tab=plots&plots_search=d497d089-03bd-43b9-9c43-b026126c40d5&key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=584d3db9-2f38-4302-8c61-83db3d791bb1%2C5cca1689-0371-4dde-a031-89a8b3b9b5a1&measures=bd087070-50c6-40ff-aede-60d4fb58e39a&start_time=1723390191794&end_time=1723391190794" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a>
+It also allows you to easily export automatically up-to-date images of these plots.
+For instance, here is the plot that tracks the benchmarking results of the Iai
+benchmarks:
+<p align="center>
+<a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&report=ea8be702-fa4d-47df-9022-29dbdcc432af&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2C59bc6a68-248b-4f43-b79f-3d43bc4182be%2Ceeaef59b-700a-487e-9398-e3f1be99addd%2Caf955bb8-4aea-4f96-a726-e897781ab2b6&measures=dc59b5b0-d80d-485f-aa42-461f4fc4d0e3&start_time=1720967964000&clear=true&tab=benchmarks"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2C59bc6a68-248b-4f43-b79f-3d43bc4182be%2Ceeaef59b-700a-487e-9398-e3f1be99addd%2Caf955bb8-4aea-4f96-a726-e897781ab2b6&measures=dc59b5b0-d80d-485f-aa42-461f4fc4d0e3&start_time=1720967964000" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a>
+</p>

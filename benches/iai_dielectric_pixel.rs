@@ -8,7 +8,7 @@ use ray_tracing_weekend::{
     point::Point,
 };
 
-pub fn iai_dielectric_scene() {
+pub fn iai_dielectric_pixel() {
     let camera = CameraBuilder::default()
         .image_width(200)
         .samples_per_pixel(10)
@@ -44,4 +44,4 @@ pub fn iai_dielectric_scene() {
     camera.render(&world, writer).expect("Failed to render.");
 }
 
-iai::main!(iai_dielectric_scene);
+iai::main!(iai_dielectric_pixel);
