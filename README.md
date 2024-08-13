@@ -90,7 +90,14 @@ To benchmark the code changes to the project, I use two approaches: 1) Relative
 Continuous Benchmarking, and 2) Continuous statistical benchmarking. For 1),
 I'm simply using Github Actions to checkout the current commit as well as its parent,
 and then I first benchmark the parent and then compare it to the benchmarks of the
-current commit. See [`CI.yml`](./.github/workflows/CI.yml). For 2),
+current commit. See [`CI.yml`](./.github/workflows/CI.yml). This allows us to
+inspect performance change in the logs of the Github Action runs:
+
+| ![image](./assets/CI_benchmarks.png) |
+|:--:|
+| *The output of Criterion and Iai for one of our benchmarks in CI. These benchmarks are run on both the current commit and the parent of the current commit. The percentages shown are relative from the parent commit to the current commit. I.e., a negative percentage indicates that the current commit is more performant on the benchmark.* |
+
+For 2),
 I'm using [Bencher](https://github.com/bencherdev/bencher): A suite of continuous
 benchmarking tools. Again, I'm using an [action](./.github/workflows/Bencher.yml)
 to checkout my code and then use Bencher to execute my benchmarks on their
