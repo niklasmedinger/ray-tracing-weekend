@@ -4,6 +4,7 @@
 use std::{fmt::Debug, io::Write};
 
 use indicatif::{ProgressBar, ProgressStyle};
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::{
     color::Color,
@@ -134,18 +135,29 @@ impl Camera {
             .expect("Malformed progress bar template.");
         bar.set_style(style);
 
+        let mut image: Vec<_> =
+            vec![Color::black(); (self.image_height * self.image_width) as usize];
+
         write!(
             writer,
             "P3\n{} {}\n255\n",
             self.image_width, self.image_height
         )?;
 
-        for j in 0..self.image_height {
-            for i in 0..self.image_width {
-                let color = self.render_pixel(world, i, j);
-                write!(writer, "{} ", self.pixel_samples_scale * color)?;
-                bar.inc(1);
-            }
+        // Zip color reference with its index
+        let par_iter = image
+            .par_iter_mut()
+            .zip(0..self.image_height * self.image_width);
+
+        par_iter.for_each(|(color, idx)| {
+            let j = idx / self.image_width;
+            let i = idx % self.image_width;
+            *color = self.render_pixel(world, i, j) * self.pixel_samples_scale;
+            bar.inc(1)
+        });
+
+        for color in image.iter() {
+            write!(writer, "{} ", color)?;
         }
         bar.finish_and_clear();
         Ok(())

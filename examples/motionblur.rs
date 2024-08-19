@@ -1,6 +1,6 @@
 use std::{
     io::{stdout, BufWriter},
-    rc::Rc,
+    sync::Arc,
 };
 
 use color_eyre::eyre::Context;
@@ -18,10 +18,10 @@ fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
     // World
-    let material_ground = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let material_ground = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     let ground_sphere = Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0, material_ground);
     let mut world = World::new();
-    world.push(Box::new(ground_sphere));
+    world.push(Arc::new(ground_sphere));
 
     for a in -11..11 {
         for b in -11..11 {
@@ -34,38 +34,38 @@ fn main() -> color_eyre::Result<()> {
 
             if (center - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 let sphere;
-                let material: Rc<dyn Material>;
+                let material: Arc<dyn Material>;
                 if choose_mat < 0.8 {
                     // lambertian
                     let albedo: Color = random_0_1_vec3().into();
                     let moves_to = center + Vec3::new(0.0, random_f32(0.0, 0.5), 0.0);
-                    material = Rc::new(Lambertian::new(albedo));
-                    sphere = Box::new(Sphere::new_moving(center, 0.2, material, moves_to));
+                    material = Arc::new(Lambertian::new(albedo));
+                    sphere = Arc::new(Sphere::new_moving(center, 0.2, material, moves_to));
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = random_vec3(0.0, 0.5).into();
                     let fuzz = random_f32(0.0, 0.5);
-                    material = Rc::new(Metal::new(albedo, fuzz));
-                    sphere = Box::new(Sphere::new(center, 0.2, material));
+                    material = Arc::new(Metal::new(albedo, fuzz));
+                    sphere = Arc::new(Sphere::new(center, 0.2, material));
                 } else {
                     // glass
-                    material = Rc::new(Dielectric::new(1.5));
-                    sphere = Box::new(Sphere::new(center, 0.2, material));
+                    material = Arc::new(Dielectric::new(1.5));
+                    sphere = Arc::new(Sphere::new(center, 0.2, material));
                 }
                 world.push(sphere);
             }
         }
     }
 
-    let material1 = Rc::new(Dielectric::new(1.5));
-    let material2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    let material3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    let material1 = Arc::new(Dielectric::new(1.5));
+    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     let sphere1 = Sphere::new(Point::new(0.0, 1.0, 0.0), 1.0, material1);
     let sphere2 = Sphere::new(Point::new(-4.0, 1.0, 0.0), 1.0, material2);
     let sphere3 = Sphere::new(Point::new(4.0, 1.0, 0.0), 1.0, material3);
-    world.push(Box::new(sphere1));
-    world.push(Box::new(sphere2));
-    world.push(Box::new(sphere3));
+    world.push(Arc::new(sphere1));
+    world.push(Arc::new(sphere2));
+    world.push(Arc::new(sphere3));
 
     // Set up camera
     let camera = CameraBuilder::new()

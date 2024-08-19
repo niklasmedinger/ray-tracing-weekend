@@ -25,7 +25,7 @@ fn refract(uv: Vec3, n: Vec3, eta_i_over_eta_t: f32) -> Vec3 {
 /// We require that any implementor must also implement [Debug]. Yes, this is
 /// not how you would normally write library code, but this library is only
 /// consumed internally and we want everything to implement [Debug].
-pub trait Material: Debug {
+pub trait Material: Debug + Sync + Send {
     // TODO: We currently always produce a scatter ray. Maybe return an Option
     // to allow for absorbing the ray?
     /// Compute the ray that is scattered away from the hit of the ray and

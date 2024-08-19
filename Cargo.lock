@@ -544,6 +544,7 @@ dependencies = [
  "iai",
  "indicatif",
  "rand",
+ "rayon",
 ]
 
 [[package]]

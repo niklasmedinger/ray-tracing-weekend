@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use ray_tracing_weekend::{
@@ -18,10 +18,10 @@ pub fn dielectric(c: &mut Criterion) {
         .build();
 
     // Materials
-    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
-    let material_right = Rc::new(Dielectric::new(1.0 / 1.33));
+    let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
+    let material_right = Arc::new(Dielectric::new(1.0 / 1.33));
 
     // Objects in the world
     let ground_sphere = Sphere::new(
@@ -35,10 +35,10 @@ pub fn dielectric(c: &mut Criterion) {
 
     // World
     let mut world = World::new();
-    world.push(Box::new(ground_sphere));
-    world.push(Box::new(center_sphere));
-    world.push(Box::new(left_sphere));
-    world.push(Box::new(right_sphere));
+    world.push(Arc::new(ground_sphere));
+    world.push(Arc::new(center_sphere));
+    world.push(Arc::new(left_sphere));
+    world.push(Arc::new(right_sphere));
 
     // Render
     c.bench_function("criterion_dielectric_pixel", |b| {

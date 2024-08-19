@@ -1,6 +1,6 @@
 use std::{
     io::{stdout, BufWriter},
-    rc::Rc,
+    sync::Arc,
 };
 
 use color_eyre::eyre::Context;
@@ -25,8 +25,8 @@ fn main() -> color_eyre::Result<()> {
         .build();
 
     // Materials
-    let yellow_lambertian = Rc::new(Lambertian::new(Color::new(1.0, 0.02, 0.02)));
-    let green_lambertian = Rc::new(Lambertian::new(Color::new(0.02, 1.0, 0.02)));
+    let yellow_lambertian = Arc::new(Lambertian::new(Color::new(1.0, 0.02, 0.02)));
+    let green_lambertian = Arc::new(Lambertian::new(Color::new(0.02, 1.0, 0.02)));
 
     // Objects in the world
     let sphere1 = Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5, yellow_lambertian.clone());
@@ -38,8 +38,8 @@ fn main() -> color_eyre::Result<()> {
 
     // World
     let mut world = World::new();
-    world.push(Box::new(sphere1));
-    world.push(Box::new(sphere2));
+    world.push(Arc::new(sphere1));
+    world.push(Arc::new(sphere2));
 
     // Render
     let inner = stdout().lock();

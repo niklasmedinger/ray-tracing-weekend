@@ -124,3 +124,6 @@ Here are some example plots:
 | <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&measures=b06ca7e4-e599-4b41-91b4-aea317107228&clear=true&tab=benchmarks&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2Ceeaef59b-700a-487e-9398-e3f1be99addd"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2Ceeaef59b-700a-487e-9398-e3f1be99addd&measures=b06ca7e4-e599-4b41-91b4-aea317107228" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a> |
 |:--:|
 | *Instructions executed for the single pixel renders over time.* |
+
+## Rust vs C++
+* TODO: A section on how my Rust implementation differs from the original C++ code to be more idiomatic.

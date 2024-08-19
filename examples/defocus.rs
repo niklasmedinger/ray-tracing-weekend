@@ -1,6 +1,6 @@
 use std::{
     io::{stdout, BufWriter},
-    rc::Rc,
+    sync::Arc,
 };
 
 use color_eyre::eyre::Context;
@@ -26,10 +26,10 @@ fn main() -> color_eyre::Result<()> {
         .build();
 
     // Materials
-    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
+    let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0));
+    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     // Objects in the world
     let ground_sphere = Sphere::new(
@@ -43,10 +43,10 @@ fn main() -> color_eyre::Result<()> {
 
     // World
     let mut world = World::new();
-    world.push(Box::new(ground_sphere));
-    world.push(Box::new(center_sphere));
-    world.push(Box::new(left_sphere));
-    world.push(Box::new(right_sphere));
+    world.push(Arc::new(ground_sphere));
+    world.push(Arc::new(center_sphere));
+    world.push(Arc::new(left_sphere));
+    world.push(Arc::new(right_sphere));
 
     // Render
     let inner = stdout().lock();
