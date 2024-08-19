@@ -54,7 +54,7 @@ impl HitRecord {
     }
 
     /// Copy the record. Note that [HitRecord] cannot implement copy because
-    /// [Arc] is not [Copy]. We implement this method, in addition to
+    /// [Rc] is not [Copy]. We implement this method, in addition to
     /// deriving [Clone], to make it explicit that this type is _cheap_ to copy.
     pub fn copy(&self) -> Self {
         Self {
@@ -112,8 +112,10 @@ impl HitRecord {
 /// We require that any implementor must also implement [Debug]. Yes, this is
 /// not how you would normally write library code, but this library is only
 /// consumed internally and we want everything to implement [Debug].
-pub trait Hittable: Debug {
-    /// Compute whether `ray` hit the `self` in [Interval] `ray_t`.
+///
+/// Implementing [Send] and [Sync] is required to concurrently render pixels.
+pub trait Hittable: Debug + Send + Sync {
+    /// Compute whether `ray` hits the `self` in [Interval] `ray_t`.
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord>;
 }
 
@@ -123,7 +125,7 @@ pub struct Sphere {
     center: Point,
     center_vec: Option<Vec3>,
     radius: f32,
-    material: Arc<dyn Material + Send + Sync>,
+    material: Arc<dyn Material>,
 }
 
 impl Sphere {
@@ -131,7 +133,7 @@ impl Sphere {
     ///
     /// * `center` - The point where the sphere is centered.
     /// * `radius` - The radius from the sphere's center to its surface.
-    pub fn new(center: Point, radius: f32, material: Arc<dyn Material + Send + Sync>) -> Self {
+    pub fn new(center: Point, radius: f32, material: Arc<dyn Material>) -> Self {
         Sphere {
             center,
             center_vec: None,
@@ -147,7 +149,7 @@ impl Sphere {
     pub fn new_moving(
         center: Point,
         radius: f32,
-        material: Arc<dyn Material + Send + Sync>,
+        material: Arc<dyn Material>,
         moves_to: Point,
     ) -> Self {
         Sphere {
@@ -159,7 +161,7 @@ impl Sphere {
     }
 
     /// Copy the sphere. Note that [Sphere] cannot implement copy because
-    /// [Arc] is not [Copy]. We implement this method, in addition to
+    /// [Rc] is not [Copy]. We implement this method, in addition to
     /// deriving [Clone], to make it explicit that this type is _cheap_ to copy.
     pub fn copy(&self) -> Self {
         Self {
@@ -214,7 +216,7 @@ impl Hittable for Sphere {
 //     a: Point,
 //     b: Point,
 //     c: Point,
-//     material: Arc<dyn Material>,
+//     material: Rc<dyn Material>,
 // }
 
 // impl Triangle {
@@ -263,7 +265,7 @@ impl Hittable for Sphere {
 
 #[derive(Default, Debug)]
 /// A thing wrapper around a [Vec] of [Hittable]s.
-pub struct World(Vec<Arc<dyn Hittable + Sync + Send>>);
+pub struct World(Vec<Arc<dyn Hittable>>);
 
 impl World {
     /// Create a new world.
@@ -273,7 +275,7 @@ impl World {
 }
 
 impl Deref for World {
-    type Target = Vec<Arc<dyn Hittable + Sync + Send>>;
+    type Target = Vec<Arc<dyn Hittable>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
