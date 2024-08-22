@@ -3,10 +3,10 @@
 
 use std::{
     f32,
-    ops::{Add, Sub},
+    ops::{Add, Deref, Index, Sub},
 };
 
-use crate::vec3::Vec3;
+use crate::vec3::{Dimension, Vec3};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 /// A point within the coordinate system.
@@ -59,5 +59,21 @@ impl Sub<Vec3> for Point {
 
     fn sub(self, rhs: Vec3) -> Self::Output {
         Self(self.0 - rhs)
+    }
+}
+
+impl Deref for Point {
+    type Target = Vec3;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Index<Dimension> for Point {
+    type Output = f32;
+
+    fn index(&self, index: Dimension) -> &Self::Output {
+        &self.0[index]
     }
 }

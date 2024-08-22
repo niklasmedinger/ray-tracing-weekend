@@ -2,13 +2,10 @@
 //! be hit by a [Ray]. It also contains the implementations of our geometric
 //! primitives which implement [Hittable].
 
-use std::{
-    fmt::Debug,
-    ops::{Deref, DerefMut},
-    sync::Arc,
-};
+use std::{fmt::Debug, sync::Arc};
 
 use crate::{
+    aabb::AABB,
     interval::Interval,
     material::Material,
     point::Point,
@@ -54,7 +51,7 @@ impl HitRecord {
     }
 
     /// Copy the record. Note that [HitRecord] cannot implement copy because
-    /// [Rc] is not [Copy]. We implement this method, in addition to
+    /// [Arc] is not [Copy]. We implement this method, in addition to
     /// deriving [Clone], to make it explicit that this type is _cheap_ to copy.
     pub fn copy(&self) -> Self {
         Self {
@@ -117,6 +114,9 @@ impl HitRecord {
 pub trait Hittable: Debug + Send + Sync {
     /// Compute whether `ray` hits the `self` in [Interval] `ray_t`.
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord>;
+
+    /// Return a reference to the bounding box of the hittable.
+    fn bounding_box(&self) -> &AABB;
 }
 
 #[derive(Clone, Debug)]
@@ -126,6 +126,7 @@ pub struct Sphere {
     center_vec: Option<Vec3>,
     radius: f32,
     material: Arc<dyn Material>,
+    bounding_box: AABB,
 }
 
 impl Sphere {
@@ -134,11 +135,14 @@ impl Sphere {
     /// * `center` - The point where the sphere is centered.
     /// * `radius` - The radius from the sphere's center to its surface.
     pub fn new(center: Point, radius: f32, material: Arc<dyn Material>) -> Self {
+        let rvec = Vec3::new(radius, radius, radius);
+        let bounding_box = AABB::from_points(center - rvec, center + rvec);
         Sphere {
             center,
             center_vec: None,
             radius,
             material,
+            bounding_box,
         }
     }
 
@@ -152,16 +156,21 @@ impl Sphere {
         material: Arc<dyn Material>,
         moves_to: Point,
     ) -> Self {
+        let rvec = Vec3::new(radius, radius, radius);
+        let bounding_box1 = AABB::from_points(center - rvec, center + rvec);
+        let bounding_box2 = AABB::from_points(moves_to - rvec, moves_to + rvec);
+        let bounding_box = AABB::from_aabbs(bounding_box1, bounding_box2);
         Sphere {
             center,
             center_vec: Some(moves_to - center),
             radius,
             material,
+            bounding_box,
         }
     }
 
     /// Copy the sphere. Note that [Sphere] cannot implement copy because
-    /// [Rc] is not [Copy]. We implement this method, in addition to
+    /// [Arc] is not [Copy]. We implement this method, in addition to
     /// deriving [Clone], to make it explicit that this type is _cheap_ to copy.
     pub fn copy(&self) -> Self {
         Self {
@@ -169,6 +178,7 @@ impl Sphere {
             radius: self.radius,
             material: Arc::clone(&self.material),
             center_vec: self.center_vec,
+            bounding_box: self.bounding_box,
         }
     }
 
@@ -208,6 +218,10 @@ impl Hittable for Sphere {
         // by the radius ensures it is of unit length.
         let normal = Unit3::new_unchecked(normal);
         Some(HitRecord::new(ray, p, normal, root, self.material.clone()))
+    }
+
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
     }
 }
 
@@ -265,26 +279,26 @@ impl Hittable for Sphere {
 
 #[derive(Default, Debug)]
 /// A thing wrapper around a [Vec] of [Hittable]s.
-pub struct World(Vec<Arc<dyn Hittable>>);
+pub struct World {
+    /// The objects in the world.
+    objects: Vec<Arc<dyn Hittable>>,
+    /// The bounding box for this world.
+    bounding_box: AABB,
+}
 
 impl World {
     /// Create a new world.
     pub fn new() -> Self {
-        Self(Vec::new())
+        Self {
+            objects: Vec::new(),
+            bounding_box: AABB::default(),
+        }
     }
-}
 
-impl Deref for World {
-    type Target = Vec<Arc<dyn Hittable>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for World {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+    /// Add a new object to the world.
+    pub fn push(&mut self, object: Arc<dyn Hittable>) {
+        self.bounding_box = AABB::from_aabbs(self.bounding_box, *object.bounding_box());
+        self.objects.push(object)
     }
 }
 
@@ -292,7 +306,7 @@ impl Hittable for World {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let mut closest_so_far = ray_t.max();
         let mut result = None;
-        for hittable in self.iter() {
+        for hittable in self.objects.iter() {
             let interval = Interval::new(ray_t.min(), closest_so_far);
             if let Some(hit_record) = hittable.hit(ray, interval) {
                 closest_so_far = hit_record.t();
@@ -300,6 +314,10 @@ impl Hittable for World {
             }
         }
         result
+    }
+
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
     }
 }
 

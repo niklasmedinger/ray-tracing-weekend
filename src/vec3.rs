@@ -3,10 +3,23 @@
 
 use std::{
     f32,
-    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+    ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
+use strum_macros::EnumIter;
+
 use crate::point::Point;
+
+#[derive(Copy, Clone, Debug, EnumIter)]
+/// The three dimensions of 3D space.
+pub enum Dimension {
+    /// The `X` dimension.
+    X,
+    /// The `Y` dimension.
+    Y,
+    /// The `Z` dimension.
+    Z,
+}
 
 #[derive(Default, Copy, Clone, PartialEq, Debug)]
 /// A three dimensional vector in space.
@@ -161,6 +174,18 @@ impl Neg for Vec3 {
 
     fn neg(self) -> Self::Output {
         Self(-self.0, -self.1, -self.2)
+    }
+}
+
+impl Index<Dimension> for Vec3 {
+    type Output = f32;
+
+    fn index(&self, index: Dimension) -> &Self::Output {
+        match index {
+            Dimension::X => &self.0,
+            Dimension::Y => &self.1,
+            Dimension::Z => &self.2,
+        }
     }
 }
 

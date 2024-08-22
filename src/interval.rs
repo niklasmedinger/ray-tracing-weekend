@@ -21,6 +21,13 @@ impl Interval {
         Interval { min, max }
     }
 
+    /// Create a new interval which encloses both intervals `a` and `b`.
+    pub fn enclosing(a: &Interval, b: &Interval) -> Self {
+        let min = if a.min <= b.min { a.min } else { b.min };
+        let max = if a.max >= b.max { a.max } else { b.max };
+        Interval { min, max }
+    }
+
     /// Get `min` of the interval `[min, max]`.
     pub fn min(&self) -> f32 {
         self.min
@@ -29,6 +36,16 @@ impl Interval {
     /// Get `max` of the interval `[min, max]`.
     pub fn max(&self) -> f32 {
         self.max
+    }
+
+    /// Override the minimum of this interval.
+    pub fn set_min(&mut self, v: f32) {
+        self.min = v;
+    }
+
+    /// Override the maximum of this interval.
+    pub fn set_max(&mut self, v: f32) {
+        self.max = v;
     }
 
     /// Get the size of `[min, max]`, i.e., `max - min`.
@@ -55,6 +72,16 @@ impl Interval {
             self.max
         } else {
             x
+        }
+    }
+
+    /// Create a new interval that is the same as `self` but padded by
+    /// `delta / 2.0` on both sides.
+    pub fn expand(&self, delta: f32) -> Self {
+        let padding = delta / 2.0;
+        Interval {
+            min: self.min - padding,
+            max: self.max + padding,
         }
     }
 
