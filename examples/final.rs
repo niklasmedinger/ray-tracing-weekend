@@ -5,9 +5,10 @@ use std::{
 
 use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
+    bvh::BVHNode,
     camera::CameraBuilder,
     color::Color,
-    hittable::{Sphere, World},
+    hittable::{Hittable, Sphere, World},
     material::{Dielectric, Lambertian, Material, Metal},
     point::Point,
     random_0_1_f32, random_0_1_vec3, random_f32, random_vec3,
@@ -20,8 +21,8 @@ fn main() -> color_eyre::Result<()> {
     // World
     let material_ground = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     let ground_sphere = Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0, material_ground);
-    let mut world = World::new();
-    world.push(Arc::new(ground_sphere));
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+    objects.push(Arc::new(ground_sphere));
 
     for a in -11..11 {
         for b in -11..11 {
@@ -51,7 +52,7 @@ fn main() -> color_eyre::Result<()> {
                     material = Arc::new(Dielectric::new(1.5));
                     sphere = Arc::new(Sphere::new(center, 0.2, material));
                 }
-                world.push(sphere);
+                objects.push(sphere);
             }
         }
     }
@@ -62,9 +63,9 @@ fn main() -> color_eyre::Result<()> {
     let sphere1 = Sphere::new(Point::new(0.0, 1.0, 0.0), 1.0, material1);
     let sphere2 = Sphere::new(Point::new(-4.0, 1.0, 0.0), 1.0, material2);
     let sphere3 = Sphere::new(Point::new(4.0, 1.0, 0.0), 1.0, material3);
-    world.push(Arc::new(sphere1));
-    world.push(Arc::new(sphere2));
-    world.push(Arc::new(sphere3));
+    objects.push(Arc::new(sphere1));
+    objects.push(Arc::new(sphere2));
+    objects.push(Arc::new(sphere3));
 
     // Set up camera
     let camera = CameraBuilder::new()
@@ -79,6 +80,10 @@ fn main() -> color_eyre::Result<()> {
         )
         .with_defocus(0.6, 10.0)
         .build();
+
+    let node = BVHNode::from_objects(objects);
+    let mut world = World::new();
+    world.push(Arc::new(node));
 
     // Render
     let inner = stdout().lock();

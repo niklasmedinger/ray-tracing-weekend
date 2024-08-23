@@ -2,9 +2,10 @@ use std::sync::Arc;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use ray_tracing_weekend::{
+    bvh::BVHNode,
     camera::CameraBuilder,
     color::Color,
-    hittable::{Sphere, World},
+    hittable::{Hittable, Sphere, World},
     material::Lambertian,
     point::Point,
     vec3::Vec3,
@@ -36,8 +37,8 @@ pub fn grid(c: &mut Criterion) {
     );
 
     // World
-    let mut world = World::new();
-    world.push(Arc::new(ground_sphere));
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+    objects.push(Arc::new(ground_sphere));
 
     // Create a grid of spheres
     let r = f32::cos(PI / 6.0);
@@ -52,9 +53,13 @@ pub fn grid(c: &mut Criterion) {
                 r,
                 yellow_lambertian.clone(),
             );
-            world.push(Arc::new(sphere));
+            objects.push(Arc::new(sphere));
         }
     }
+
+    let node = BVHNode::from_objects(objects);
+    let mut world = World::new();
+    world.push(Arc::new(node));
 
     // Render
     c.bench_function("criterion_grid_pixel", |b| {

@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use ray_tracing_weekend::{
+    bvh::BVHNode,
     camera::CameraBuilder,
     color::Color,
-    hittable::{Sphere, World},
+    hittable::{Hittable, Sphere, World},
     material::Lambertian,
     point::Point,
     vec3::Vec3,
@@ -35,8 +36,8 @@ pub fn iai_grid_pixel() {
     );
 
     // World
-    let mut world = World::new();
-    world.push(Arc::new(ground_sphere));
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+    objects.push(Arc::new(ground_sphere));
 
     // Create a grid of spheres
     let r = f32::cos(PI / 6.0);
@@ -51,9 +52,13 @@ pub fn iai_grid_pixel() {
                 r,
                 yellow_lambertian.clone(),
             );
-            world.push(Arc::new(sphere));
+            objects.push(Arc::new(sphere));
         }
     }
+
+    let node = BVHNode::from_objects(objects);
+    let mut world = World::new();
+    world.push(Arc::new(node));
 
     // Render
     camera.render_pixel(&world, 100, 100);

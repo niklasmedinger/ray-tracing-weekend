@@ -159,7 +159,7 @@ impl Sphere {
         let rvec = Vec3::new(radius, radius, radius);
         let bounding_box1 = AABB::from_points(center - rvec, center + rvec);
         let bounding_box2 = AABB::from_points(moves_to - rvec, moves_to + rvec);
-        let bounding_box = AABB::from_aabbs(bounding_box1, bounding_box2);
+        let bounding_box = AABB::from_aabbs(&bounding_box1, &bounding_box2);
         Sphere {
             center,
             center_vec: Some(moves_to - center),
@@ -297,8 +297,13 @@ impl World {
 
     /// Add a new object to the world.
     pub fn push(&mut self, object: Arc<dyn Hittable>) {
-        self.bounding_box = AABB::from_aabbs(self.bounding_box, *object.bounding_box());
+        self.bounding_box = AABB::from_aabbs(&self.bounding_box, object.bounding_box());
         self.objects.push(object)
+    }
+
+    /// Consume this world and return its objects.
+    pub fn into_objects(self) -> Vec<Arc<dyn Hittable>> {
+        self.objects
     }
 }
 

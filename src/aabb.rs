@@ -1,6 +1,6 @@
 //! This module contains the axis aligned bounding box code.
 
-use std::ops::Index;
+use std::{cmp::Ordering, ops::Index};
 
 use strum::IntoEnumIterator;
 
@@ -55,7 +55,7 @@ impl AABB {
     }
 
     /// Create a new bounding box that contains both `box1` and `box2`.
-    pub fn from_aabbs(box1: AABB, box2: AABB) -> Self {
+    pub fn from_aabbs(box1: &AABB, box2: &AABB) -> Self {
         let x = Interval::enclosing(&box1.x, &box2.x);
         let y = Interval::enclosing(&box1.y, &box2.y);
         let z = Interval::enclosing(&box1.z, &box2.z);
@@ -78,7 +78,8 @@ impl AABB {
     }
 
     /// Determine whether `ray` hits
-    pub fn hit(&self, ray: &Ray, ray_t: &mut Interval) -> bool {
+    pub fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<Interval> {
+        let mut res = ray_t;
         let ray_origin = ray.origin();
         let ray_dir = ray.direction();
 
@@ -91,26 +92,51 @@ impl AABB {
 
             if t0 < t1 {
                 if t0 > ray_t.min() {
-                    ray_t.set_min(t0);
+                    res.set_min(t0);
                 }
                 if t1 < ray_t.max() {
-                    ray_t.set_max(t1);
+                    res.set_max(t1);
                 }
             } else {
                 if t1 > ray_t.min() {
-                    ray_t.set_min(t1);
+                    res.set_min(t1);
                 }
                 if t0 < ray_t.max() {
-                    ray_t.set_max(t0);
+                    res.set_max(t0);
                 }
             }
 
-            if ray_t.max() <= ray_t.min() {
-                return false;
+            if res.max() <= res.min() {
+                return None;
             }
         }
 
-        true
+        Some(res)
+    }
+
+    /// Returns `Ordering::Less` iff the minimum value of self's interval in
+    /// the dimension is smaller than other's interval in the dimension.
+    pub fn box_compare(&self, other: &AABB, dimension: Dimension) -> Ordering {
+        let self_axis_interval = self[dimension];
+        let other_axis_interval = other[dimension];
+        self_axis_interval
+            .min()
+            .total_cmp(&other_axis_interval.min())
+    }
+
+    /// Compare self and other in the x-dimension.
+    pub fn box_x_compare(&self, other: &AABB) -> Ordering {
+        self.box_compare(other, Dimension::X)
+    }
+
+    /// Compare self and other in the y-dimension.
+    pub fn box_y_compare(&self, other: &AABB) -> Ordering {
+        self.box_compare(other, Dimension::Y)
+    }
+
+    /// Compare self and other in the z-dimension.
+    pub fn box_z_compare(&self, other: &AABB) -> Ordering {
+        self.box_compare(other, Dimension::Z)
     }
 }
 

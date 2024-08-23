@@ -1,2 +1,6 @@
 /target
 *.ppm
+*.png
+*.svg
+*.data
+*.old

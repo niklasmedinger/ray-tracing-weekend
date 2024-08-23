@@ -14,6 +14,7 @@
 )]
 
 pub mod aabb;
+pub mod bvh;
 pub mod camera;
 pub mod color;
 pub mod hittable;

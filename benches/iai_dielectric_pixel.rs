@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use ray_tracing_weekend::{
+    bvh::BVHNode,
     camera::CameraBuilder,
     color::Color,
-    hittable::{Sphere, World},
+    hittable::{Hittable, Sphere, World},
     material::{Dielectric, Lambertian, Metal},
     point::Point,
 };
@@ -33,11 +34,15 @@ pub fn iai_dielectric_pixel() {
     let right_sphere = Sphere::new(Point::new(1.0, 0.0, -1.0), 0.5, material_right.clone());
 
     // World
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+    objects.push(Arc::new(ground_sphere));
+    objects.push(Arc::new(center_sphere));
+    objects.push(Arc::new(left_sphere));
+    objects.push(Arc::new(right_sphere));
+
+    let node = BVHNode::from_objects(objects);
     let mut world = World::new();
-    world.push(Arc::new(ground_sphere));
-    world.push(Arc::new(center_sphere));
-    world.push(Arc::new(left_sphere));
-    world.push(Arc::new(right_sphere));
+    world.push(Arc::new(node));
 
     // Render
     let writer = std::io::sink();

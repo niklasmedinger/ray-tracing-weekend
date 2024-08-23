@@ -5,9 +5,10 @@ use std::{
 
 use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
+    bvh::BVHNode,
     camera::CameraBuilder,
     color::Color,
-    hittable::{Sphere, World},
+    hittable::{Hittable, Sphere, World},
     material::Lambertian,
     point::Point,
 };
@@ -30,9 +31,13 @@ fn main() -> color_eyre::Result<()> {
     );
 
     // World
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+    objects.push(Arc::new(sphere1));
+    objects.push(Arc::new(sphere2));
+
+    let node = BVHNode::from_objects(objects);
     let mut world = World::new();
-    world.push(Arc::new(sphere1));
-    world.push(Arc::new(sphere2));
+    world.push(Arc::new(node));
 
     // Render
     let inner = stdout().lock();
