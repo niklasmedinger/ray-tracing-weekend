@@ -65,11 +65,8 @@ pub fn many_scene(c: &mut Criterion) {
         .build();
 
     let mut world = World::new();
-    // let node = BVHNode::from_objects(objects);
-    // world.push(Arc::new(node));
-    for object in objects.into_iter() {
-        world.push(object)
-    }
+    let node = BVHNode::from_objects(objects);
+    world.push(Arc::new(node));
 
     // Render
     let writer = std::io::sink();
