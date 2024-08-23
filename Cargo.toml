@@ -46,3 +46,7 @@ harness = false
 [[bench]]
 name = "criterion_grid_pixel"
 harness = false
+
+[[bench]]
+name = "criterion_many_scene"
+harness = false
