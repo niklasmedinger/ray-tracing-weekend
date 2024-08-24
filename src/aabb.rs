@@ -34,6 +34,24 @@ impl AABB {
         Self { x, y, z }
     }
 
+    /// Create an empty bounding box.
+    pub const fn empty() -> Self {
+        Self {
+            x: Interval::empty(),
+            y: Interval::empty(),
+            z: Interval::empty(),
+        }
+    }
+
+    /// Create a bounding box that spans the whole scene.
+    pub const fn universe() -> Self {
+        Self {
+            x: Interval::universe(),
+            y: Interval::universe(),
+            z: Interval::universe(),
+        }
+    }
+
     /// Create a new bounding box from two points.
     pub fn from_points(a: Point, b: Point) -> Self {
         let x = if a.x() <= b.x() {
@@ -62,22 +80,40 @@ impl AABB {
         Self { x, y, z }
     }
 
-    /// Get the x interval
+    /// Get the x interval.
     pub fn x(&self) -> &Interval {
         &self.x
     }
 
-    /// Get the y interval
+    /// Get the y interval.
     pub fn y(&self) -> &Interval {
         &self.y
     }
 
-    /// Get the z interval
+    /// Get the z interval.
     pub fn z(&self) -> &Interval {
         &self.z
     }
 
-    /// Determine whether `ray` hits
+    /// Returns the dimension with the longest axis.
+    pub fn longest_axis(&self) -> Dimension {
+        if self.x.size() > self.y.size() {
+            if self.x.size() > self.z.size() {
+                Dimension::X
+            } else {
+                Dimension::Z
+            }
+        } else {
+            if self.y.size() > self.z.size() {
+                Dimension::Y
+            } else {
+                Dimension::Z
+            }
+        }
+    }
+
+    /// Determine whether `ray` hits the bounding box in interval `ray_t`.
+    /// If so, returns a new interval where the ray and the box intersect.
     pub fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<Interval> {
         let mut res = ray_t;
         let ray_origin = ray.origin();

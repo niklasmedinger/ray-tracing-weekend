@@ -2,9 +2,7 @@
 
 use std::sync::Arc;
 
-use strum::IntoEnumIterator;
-
-use crate::{aabb::AABB, hittable::Hittable, interval::Interval, random_f32, vec3::Dimension};
+use crate::{aabb::AABB, hittable::Hittable, interval::Interval};
 
 #[derive(Clone, Debug)]
 /// A BVH node with its bounding box, and left and right children.
@@ -23,11 +21,11 @@ impl BVHNode {
     pub fn new(objects: &mut [Arc<dyn Hittable>]) -> Self {
         let left: Arc<dyn Hittable>;
         let right: Arc<dyn Hittable>;
-        let n = random_f32(0.0, 2.0) as usize;
-        // SAFETY: The Dimension enum has 3 variants. We skip at most 2 items.
-        // Thus, there is always an element left in the iterator and it is safe
-        // to unwrap() this element.
-        let dimension = Dimension::iter().nth(n).unwrap();
+        let mut bounding_box = AABB::empty();
+        for object in objects.iter() {
+            bounding_box = AABB::from_aabbs(&bounding_box, object.bounding_box());
+        }
+        let dimension = bounding_box.longest_axis();
 
         match objects {
             [v] => {
@@ -46,7 +44,6 @@ impl BVHNode {
                 right = Arc::new(Self::new(upper));
             }
         }
-        let bounding_box = AABB::from_aabbs(left.bounding_box(), right.bounding_box());
         Self {
             bounding_box,
             left,
