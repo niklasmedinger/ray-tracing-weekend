@@ -103,12 +103,10 @@ impl AABB {
             } else {
                 Dimension::Z
             }
+        } else if self.y.size() > self.z.size() {
+            Dimension::Y
         } else {
-            if self.y.size() > self.z.size() {
-                Dimension::Y
-            } else {
-                Dimension::Z
-            }
+            Dimension::Z
         }
     }
 
