@@ -22,6 +22,7 @@ pub mod interval;
 pub mod material;
 pub mod point;
 pub mod ray;
+pub mod texture;
 pub mod vec3;
 
 use std::f32;

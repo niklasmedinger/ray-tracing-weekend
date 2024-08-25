@@ -23,6 +23,8 @@ pub struct HitRecord {
     normal: Unit3,
     material: Arc<dyn Material>,
     t: f32,
+    u: f32,
+    v: f32,
     front_face: bool,
 }
 
@@ -38,6 +40,8 @@ impl HitRecord {
         p: Point,
         normal: Unit3,
         t: f32,
+        u: f32,
+        v: f32,
         material: Arc<dyn Material>,
     ) -> HitRecord {
         let (front_face, normal) = Self::face_normal(ray, normal);
@@ -46,6 +50,8 @@ impl HitRecord {
             normal,
             material,
             t,
+            u,
+            v,
             front_face,
         }
     }
@@ -59,6 +65,8 @@ impl HitRecord {
             normal: self.normal,
             material: Arc::clone(&self.material),
             t: self.t,
+            u: self.u,
+            v: self.v,
             front_face: self.front_face,
         }
     }
@@ -89,6 +97,16 @@ impl HitRecord {
     /// Return the material the surface is made of.
     pub fn material(&self) -> &dyn Material {
         self.material.as_ref()
+    }
+
+    /// Return the texture coordinate `u`.
+    pub fn u(&self) -> f32 {
+        self.u
+    }
+
+    /// Return the texture coordinate `v`.
+    pub fn v(&self) -> f32 {
+        self.v
     }
 
     fn face_normal(ray: &Ray, outward_normal: Unit3) -> (bool, Unit3) {
@@ -217,7 +235,16 @@ impl Hittable for Sphere {
         // point where the ray intersected the spheres surface. Thus, dividing
         // by the radius ensures it is of unit length.
         let normal = Unit3::new_unchecked(normal);
-        Some(HitRecord::new(ray, p, normal, root, self.material.clone()))
+        // TODO: Update u and v computation
+        Some(HitRecord::new(
+            ray,
+            p,
+            normal,
+            root,
+            0.0,
+            0.0,
+            self.material.clone(),
+        ))
     }
 
     fn bounding_box(&self) -> &AABB {

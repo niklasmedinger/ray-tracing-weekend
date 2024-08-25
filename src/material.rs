@@ -2,10 +2,15 @@
 //! [Ray] is refracted by a surface. The module also contains the implementations
 //! for types that implement the material trait.
 
-use std::fmt::Debug;
+use std::{fmt::Debug, sync::Arc};
 
 use crate::{
-    color::Color, hittable::HitRecord, random_0_1_f32, random_unit_vector, ray::Ray, vec3::Vec3,
+    color::Color,
+    hittable::HitRecord,
+    random_0_1_f32, random_unit_vector,
+    ray::Ray,
+    texture::{SolidColor, Texture},
+    vec3::Vec3,
 };
 
 fn reflect(v: Vec3, n: Vec3) -> Vec3 {
@@ -35,16 +40,23 @@ pub trait Material: Debug + Send + Sync {
     fn scatter(&self, ray: &Ray, hit_record: HitRecord) -> (Ray, Color);
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 /// A material that produces scatter rays according to the lambertian distribution.
 pub struct Lambertian {
-    albedo: Color,
+    texture: Arc<dyn Texture>,
 }
 
 impl Lambertian {
     /// Create a new lambertian material from its color.
     pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+        Self {
+            texture: Arc::new(SolidColor::new(albedo)),
+        }
+    }
+
+    /// Create a new lambertian material from a texture.
+    pub fn from_texture(texture: Arc<dyn Texture>) -> Self {
+        Self { texture }
     }
 }
 
@@ -60,7 +72,10 @@ impl Material for Lambertian {
         };
 
         let scattered = Ray::new(hit_record.p(), scatter_direction, ray.time());
-        (scattered, self.albedo)
+        let attenuation = self
+            .texture
+            .value(hit_record.u(), hit_record.v(), hit_record.p());
+        (scattered, attenuation)
     }
 }
 
