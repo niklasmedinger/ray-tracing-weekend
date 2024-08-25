@@ -121,7 +121,6 @@ impl ImageTexture {
 
 impl Texture for ImageTexture {
     fn value(&self, u: f32, v: f32, _p: Point) -> Color {
-        // eprintln!("u: {}, v: {}", u, v);
         let u = Interval::new(0.0, 1.0).clamp(u);
         let v = 1.0 - Interval::new(0.0, 1.0).clamp(v);
 
@@ -129,14 +128,9 @@ impl Texture for ImageTexture {
         let j = (v * self.image.height() as f32) as u32;
         let x = Self::clamp(i, 0, self.image.width());
         let y = Self::clamp(j, 0, self.image.height());
-        // eprintln!("x: {}, y: {}", x, y);
         let color = self.image.get_pixel(x, y);
         let color = Color::new(color[0] as f32, color[1] as f32, color[2] as f32);
-        // eprintln!("1 - color: {:?}", color);
         let color_scale = 1.0 / 255.0;
-        let color = color * color_scale;
-        // eprintln!("2 - color: {:?}", color);
-        // eprintln!("3 - color: {}", color);
-        color
+        color * color_scale
     }
 }
