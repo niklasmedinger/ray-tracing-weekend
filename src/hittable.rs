@@ -11,6 +11,7 @@ use crate::{
     point::Point,
     ray::Ray,
     vec3::{Unit3, Vec3},
+    PI,
 };
 
 #[derive(Clone, Debug)]
@@ -206,6 +207,14 @@ impl Sphere {
         self.center_vec
             .map_or(self.center, |v| self.center + at_time * v)
     }
+
+    fn get_sphere_uv(p: Point) -> (f32, f32) {
+        let theta = f32::acos(-p.y());
+        let phi = f32::atan2(-p.z(), p.x()) + PI;
+        let u = phi / (2.0 * PI);
+        let v = theta / PI;
+        (u, v)
+    }
 }
 
 impl Hittable for Sphere {
@@ -231,18 +240,18 @@ impl Hittable for Sphere {
 
         let p = ray.at(root);
         let normal = (p - self.center) / self.radius;
+        let (u, v) = Self::get_sphere_uv(Point::from(normal));
         // SAFETY: `normal` is the vector from the center of the sphere to the
         // point where the ray intersected the spheres surface. Thus, dividing
         // by the radius ensures it is of unit length.
         let normal = Unit3::new_unchecked(normal);
-        // TODO: Update u and v computation
         Some(HitRecord::new(
             ray,
             p,
             normal,
             root,
-            0.0,
-            0.0,
+            u,
+            v,
             self.material.clone(),
         ))
     }

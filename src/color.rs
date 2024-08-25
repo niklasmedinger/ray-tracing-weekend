@@ -108,9 +108,9 @@ impl std::fmt::Display for Color {
         let r = linear_to_gamma(self.0.x());
         let g = linear_to_gamma(self.0.y());
         let b = linear_to_gamma(self.0.z());
-        let rbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(r)) as u32;
-        let gbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(g)) as u32;
-        let bbyte: u32 = (256.0 * COLOR_INTENSITY.clamp(b)) as u32;
+        let rbyte: u32 = (255.999 * COLOR_INTENSITY.clamp(r)) as u32;
+        let gbyte: u32 = (255.999 * COLOR_INTENSITY.clamp(g)) as u32;
+        let bbyte: u32 = (255.999 * COLOR_INTENSITY.clamp(b)) as u32;
         write!(f, "{} {} {}", rbyte, gbyte, bbyte)
     }
 }
