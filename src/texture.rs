@@ -6,6 +6,7 @@ use std::{fmt::Debug, path::Path};
 use image::{ImageBuffer, Rgb};
 
 use crate::interval::Interval;
+use crate::perlin::Perlin;
 use crate::{color::Color, point::Point};
 
 /// Defines the methods a texture object needs to implement.
@@ -132,5 +133,24 @@ impl Texture for ImageTexture {
         let color = Color::new(color[0] as f32, color[1] as f32, color[2] as f32);
         let color_scale = 1.0 / 255.0;
         color * color_scale
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+/// A noise texture backed by perlin noise.
+pub struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    /// Create a new texture from perlin noise.
+    pub fn new(noise: Perlin) -> Self {
+        Self { noise }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f32, _v: f32, p: Point) -> Color {
+        Color::white() * self.noise.noise(p)
     }
 }

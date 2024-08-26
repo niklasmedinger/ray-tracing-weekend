@@ -20,6 +20,7 @@ pub mod color;
 pub mod hittable;
 pub mod interval;
 pub mod material;
+pub mod perlin;
 pub mod point;
 pub mod ray;
 pub mod texture;
