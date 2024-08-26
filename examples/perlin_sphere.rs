@@ -22,7 +22,7 @@ fn main() -> color_eyre::Result<()> {
     let camera = CameraBuilder::default()
         .with_orientation(look_from, look_at, vup)
         .fov(20.0)
-        .image_width(1080)
+        .image_width(800)
         .samples_per_pixel(100)
         .max_depth(50)
         .build();

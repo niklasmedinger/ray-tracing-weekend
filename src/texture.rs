@@ -140,21 +140,21 @@ impl Texture for ImageTexture {
 /// A noise texture backed by perlin noise.
 pub struct NoiseTexture {
     noise: Perlin,
-    scale: f32,
+    _scale: f32,
 }
 
 impl NoiseTexture {
     /// Create a new texture from perlin noise.
-    pub fn new(scale: f32) -> Self {
+    pub fn new(_scale: f32) -> Self {
         Self {
             noise: Perlin::new(),
-            scale,
+            _scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f32, _v: f32, p: Point) -> Color {
-        Color::white() * (self.noise.noise(p * self.scale))
+        Color::white() * self.noise.turb(p, 7)
     }
 }
