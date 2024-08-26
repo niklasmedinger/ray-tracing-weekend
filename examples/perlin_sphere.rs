@@ -23,7 +23,7 @@ fn main() -> color_eyre::Result<()> {
         .with_orientation(look_from, look_at, vup)
         .fov(20.0)
         .image_width(1080)
-        .samples_per_pixel(200)
+        .samples_per_pixel(100)
         .max_depth(50)
         .build();
 
