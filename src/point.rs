@@ -3,7 +3,7 @@
 
 use std::{
     f32,
-    ops::{Add, Deref, Index, Sub},
+    ops::{Add, Deref, Index, Mul, Sub},
 };
 
 use crate::vec3::{Dimension, Vec3};
@@ -43,6 +43,14 @@ impl Add<Vec3> for Point {
 
     fn add(self, rhs: Vec3) -> Self::Output {
         Self(self.0 + rhs)
+    }
+}
+
+impl Mul<f32> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self(self.0 * rhs)
     }
 }
 
