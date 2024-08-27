@@ -8,7 +8,7 @@ use ray_tracing_weekend::{
     material::{Dielectric, Lambertian, Material, Metal},
     point::Point,
     random_0_1_f32, random_0_1_vec3, random_f32, random_vec3,
-    texture::CheckeredTexture,
+    texture::{CheckeredTexture, ImageTexture},
     vec3::Vec3,
 };
 
@@ -58,7 +58,8 @@ fn main() {
     }
 
     let material1 = Arc::new(Dielectric::new(1.5));
-    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let earth_texture = ImageTexture::new("./assets/earthmap.jpg");
+    let material2 = Arc::new(Lambertian::from_texture(Arc::new(earth_texture)));
     let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     let sphere1 = Sphere::new(Point::new(0.0, 1.0, 0.0), 1.0, material1);
     let sphere2 = Sphere::new(Point::new(-4.0, 1.0, 0.0), 1.0, material2);
@@ -69,8 +70,8 @@ fn main() {
 
     // Set up camera
     let camera = CameraBuilder::new()
-        .image_width(1200)
-        .samples_per_pixel(400)
+        .image_width(1080)
+        .samples_per_pixel(200)
         .max_depth(50)
         .fov(20.0)
         .with_orientation(
