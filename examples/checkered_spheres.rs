@@ -1,9 +1,5 @@
-use std::{
-    io::{stdout, BufWriter},
-    sync::Arc,
-};
+use std::sync::Arc;
 
-use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
@@ -14,8 +10,7 @@ use ray_tracing_weekend::{
     vec3::Vec3,
 };
 
-fn main() -> color_eyre::Result<()> {
-    color_eyre::install()?;
+fn main() {
     // Default camera
     let look_from = Point::new(13.0, 2.0, 3.0);
     let look_at = Point::new(0.0, 0.0, 0.0);
@@ -49,11 +44,7 @@ fn main() -> color_eyre::Result<()> {
     )));
 
     // Render
-    let inner = stdout().lock();
-    let writer = BufWriter::with_capacity(1024 * 32, inner);
-    camera
-        .render(&world, writer)
-        .wrap_err("Failed to render image.")?;
-
-    Ok(())
+    let file_name = "checkered_spheres.png";
+    let image = camera.render(&world);
+    image.save(file_name).expect("Failed to save file.");
 }

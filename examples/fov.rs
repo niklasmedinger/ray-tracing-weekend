@@ -1,9 +1,5 @@
-use std::{
-    io::{stdout, BufWriter},
-    sync::Arc,
-};
+use std::sync::Arc;
 
-use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
@@ -13,8 +9,7 @@ use ray_tracing_weekend::{
     PI,
 };
 
-fn main() -> color_eyre::Result<()> {
-    color_eyre::install()?;
+fn main() {
     // Default camera
     let camera = CameraBuilder::default().fov(100.0).build();
 
@@ -33,11 +28,7 @@ fn main() -> color_eyre::Result<()> {
     world.push(Arc::new(sphere2));
 
     // Render
-    let inner = stdout().lock();
-    let writer = BufWriter::with_capacity(1024 * 32, inner);
-    camera
-        .render(&world, writer)
-        .wrap_err("Failed to render image.")?;
-
-    Ok(())
+    let file_name = "fov.png";
+    let image = camera.render(&world);
+    image.save(file_name).expect("Failed to save file.");
 }

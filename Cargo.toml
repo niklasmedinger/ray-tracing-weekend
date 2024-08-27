@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-image = "0.25.2"
+image = { version = "0.25.2", features = ["rayon"] }
 indicatif = "0.17.8"
 rand = { version = "0.8.5" }
 rayon = "1.10.0"
@@ -12,7 +12,6 @@ strum = "0.26.3"
 strum_macros = "0.26.4"
 
 [dev-dependencies]
-color-eyre = "0.6.3"
 criterion = "0.5.1"
 iai = "0.1"
 

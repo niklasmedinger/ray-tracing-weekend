@@ -45,7 +45,7 @@ pub fn iai_dielectric_scene() {
     world.push(Arc::new(node));
 
     // Render
-    camera.render_pixel(&world, 100, 100);
+    let _ = camera.render(&world);
 }
 
 iai::main!(iai_dielectric_scene);

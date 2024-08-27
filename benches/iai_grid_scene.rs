@@ -61,8 +61,7 @@ pub fn iai_grid_scene() {
     world.push(Arc::new(node));
 
     // Render
-    let writer = std::io::sink();
-    camera.render(&world, writer).expect("Failed to render.");
+    let _ = camera.render(&world);
 }
 
 iai::main!(iai_grid_scene);

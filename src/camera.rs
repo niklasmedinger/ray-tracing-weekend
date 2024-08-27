@@ -1,10 +1,11 @@
 //! This module contains the camera code which renders the image.
 //! See [Camera] for the implementation of the camera, see [CameraBuilder]
 //! for creating cameras.
-use std::{fmt::Debug, io::Write};
+use std::fmt::Debug;
 
+use image::{ImageBuffer, Rgb};
 use indicatif::{ProgressBar, ProgressStyle};
-use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
+use rayon::iter::ParallelIterator;
 
 use crate::{
     color::Color,
@@ -121,7 +122,7 @@ impl Camera {
     /// renders a progress bar to stderr.
     /// Yes, this is not behavior you want from a library function, but we will
     /// only be consumed by our own `applications' :)
-    pub fn render(&self, world: &World, mut writer: impl Write) -> std::io::Result<()> {
+    pub fn render(&self, world: &World) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         // Create progress bar
         let bar = if self.hide_progress {
             ProgressBar::hidden()
@@ -135,32 +136,20 @@ impl Camera {
             .expect("Malformed progress bar template.");
         bar.set_style(style);
 
-        let mut image: Vec<_> =
-            vec![Color::black(); (self.image_height * self.image_width) as usize];
-
-        write!(
-            writer,
-            "P3\n{} {}\n255\n",
-            self.image_width, self.image_height
-        )?;
+        let mut image = image::RgbImage::new(self.image_width, self.image_height);
 
         // Zip color reference with its index
-        let par_iter = image
-            .par_iter_mut()
-            .zip(0..self.image_height * self.image_width);
-
-        par_iter.for_each(|(color, idx)| {
-            let j = idx / self.image_width;
-            let i = idx % self.image_width;
-            *color = self.render_pixel(world, i, j) * self.pixel_samples_scale;
+        image.par_enumerate_pixels_mut().for_each(|(x, y, color)| {
+            let c = self.render_pixel(world, x, y) * self.pixel_samples_scale;
+            let (r, g, b) = c.rgb();
+            color.0[0] = r;
+            color.0[1] = g;
+            color.0[2] = b;
             bar.inc(1)
         });
 
-        for color in image.iter() {
-            write!(writer, "{} ", color)?;
-        }
         bar.finish_and_clear();
-        Ok(())
+        image
     }
 
     /// Render the single pixel at position `x` and `y`.

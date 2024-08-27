@@ -45,8 +45,7 @@ pub fn iai_dielectric_pixel() {
     world.push(Arc::new(node));
 
     // Render
-    let writer = std::io::sink();
-    camera.render(&world, writer).expect("Failed to render.");
+    camera.render_pixel(&world, 100, 100);
 }
 
 iai::main!(iai_dielectric_pixel);

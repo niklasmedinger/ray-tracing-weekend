@@ -1,9 +1,5 @@
-use std::{
-    io::{stdout, BufWriter},
-    sync::Arc,
-};
+use std::sync::Arc;
 
-use color_eyre::eyre::Context;
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
@@ -14,9 +10,7 @@ use ray_tracing_weekend::{
     vec3::Vec3,
 };
 
-fn main() -> color_eyre::Result<()> {
-    color_eyre::install()?;
-
+fn main() {
     // World
     let material_ground = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     let ground_sphere = Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0, material_ground);
@@ -82,11 +76,7 @@ fn main() -> color_eyre::Result<()> {
         .build();
 
     // Render
-    let inner = stdout().lock();
-    let writer = BufWriter::with_capacity(1024 * 32, inner);
-    camera
-        .render(&world, writer)
-        .wrap_err("Failed to render image.")?;
-
-    Ok(())
+    let file_name = "motionblur.png";
+    let image = camera.render(&world);
+    image.save(file_name).expect("Failed to save file.");
 }

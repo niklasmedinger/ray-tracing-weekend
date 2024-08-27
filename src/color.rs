@@ -28,6 +28,26 @@ impl Color {
     pub fn white() -> Self {
         Color(Vec3::new(1.0, 1.0, 1.0))
     }
+
+    /// Extracts the rgb values from the color.
+    pub fn rgb(&self) -> (u8, u8, u8) {
+        let r = Self::linear_to_gamma(self.0.x());
+        let g = Self::linear_to_gamma(self.0.y());
+        let b = Self::linear_to_gamma(self.0.z());
+        let rbyte = (255.999 * COLOR_INTENSITY.clamp(r)) as u8;
+        let gbyte = (255.999 * COLOR_INTENSITY.clamp(g)) as u8;
+        let bbyte = (255.999 * COLOR_INTENSITY.clamp(b)) as u8;
+        (rbyte, gbyte, bbyte)
+    }
+
+    // Linear to gamma space
+    fn linear_to_gamma(linear_component: f32) -> f32 {
+        if linear_component > 0.0 {
+            linear_component.sqrt()
+        } else {
+            0.0
+        }
+    }
 }
 
 impl Add for Color {
@@ -96,21 +116,9 @@ impl From<Vec3> for Color {
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Linear to gamma space
-        fn linear_to_gamma(linear_component: f32) -> f32 {
-            if linear_component > 0.0 {
-                linear_component.sqrt()
-            } else {
-                0.0
-            }
-        }
-
-        let r = linear_to_gamma(self.0.x());
-        let g = linear_to_gamma(self.0.y());
-        let b = linear_to_gamma(self.0.z());
-        let rbyte: u32 = (255.999 * COLOR_INTENSITY.clamp(r)) as u32;
-        let gbyte: u32 = (255.999 * COLOR_INTENSITY.clamp(g)) as u32;
-        let bbyte: u32 = (255.999 * COLOR_INTENSITY.clamp(b)) as u32;
-        write!(f, "{} {} {}", rbyte, gbyte, bbyte)
+        let r = Self::linear_to_gamma(self.0.x());
+        let g = Self::linear_to_gamma(self.0.y());
+        let b = Self::linear_to_gamma(self.0.z());
+        write!(f, "{} {} {}", r as u8, g as u8, b as u8)
     }
 }

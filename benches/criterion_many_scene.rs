@@ -69,9 +69,8 @@ pub fn many_scene(c: &mut Criterion) {
     world.push(Arc::new(node));
 
     // Render
-    let writer = std::io::sink();
     c.bench_function("criterion_many_scene", |b| {
-        b.iter(|| camera.render(&world, writer).expect("Failed to render."))
+        b.iter_with_large_drop(|| camera.render(&world))
     });
 }
 

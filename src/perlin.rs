@@ -4,7 +4,7 @@ use std::array;
 
 use crate::{point::Point, random_0_1_vec3, random_f32, vec3::Vec3};
 
-const POINT_COUNT: usize = 256;
+const POINT_COUNT: usize = 1024;
 
 #[derive(Debug, Clone, Copy)]
 /// A Perlin texture.
