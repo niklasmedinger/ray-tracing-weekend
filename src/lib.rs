@@ -22,6 +22,7 @@ pub mod interval;
 pub mod material;
 pub mod perlin;
 pub mod point;
+pub mod quad;
 pub mod ray;
 pub mod texture;
 pub mod vec3;

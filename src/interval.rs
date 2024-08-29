@@ -100,4 +100,9 @@ impl Interval {
             max: INFINITY,
         }
     }
+
+    /// The unit interval from `0.0` to `1.0`.
+    pub const fn unit() -> Self {
+        Self { min: 0.0, max: 1.0 }
+    }
 }

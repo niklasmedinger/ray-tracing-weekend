@@ -31,7 +31,9 @@ impl Default for AABB {
 impl AABB {
     /// Create a new bounding box from the given intervals.
     pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
-        Self { x, y, z }
+        let mut res = Self { x, y, z };
+        res.pad_to_minimums();
+        res
     }
 
     /// Create an empty bounding box.
@@ -69,7 +71,9 @@ impl AABB {
         } else {
             Interval::new(b.z(), a.z())
         };
-        Self { x, y, z }
+        let mut res = Self { x, y, z };
+        res.pad_to_minimums();
+        res
     }
 
     /// Create a new bounding box that contains both `box1` and `box2`.
@@ -171,6 +175,20 @@ impl AABB {
     /// Compare self and other in the z-dimension.
     pub fn box_z_compare(&self, other: &AABB) -> Ordering {
         self.box_compare(other, Dimension::Z)
+    }
+
+    /// Pad the bounding box such that no side is narrower than some delta.
+    fn pad_to_minimums(&mut self) {
+        let delta = 0.0001;
+        if self.x.size() < delta {
+            self.x = self.x.expand(delta);
+        }
+        if self.y.size() < delta {
+            self.y = self.y.expand(delta);
+        }
+        if self.z.size() < delta {
+            self.z = self.z.expand(delta);
+        }
     }
 }
 

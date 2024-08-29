@@ -35,7 +35,7 @@ impl HitRecord {
     /// * `ray` - The [Ray] that hit a surface.
     /// * `p` - The [Point] of intersection.
     /// * `normal` - The surface normal vector. We assume this to have unit length!
-    /// * `t` - The `t` such that `ray(t) = ray.origin() = + t * ray.direction() = p`.
+    /// * `t` - The `t` such that `ray(t) = ray.origin() + t * ray.direction() = p`.
     pub fn new(
         ray: &Ray,
         p: Point,
