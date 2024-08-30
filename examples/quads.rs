@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use ray_tracing_weekend::{
-    bvh::BVHNode, camera::CameraBuilder, color::Color, hittable::World, material::Lambertian,
-    point::Point, quad::Quad, vec3::Vec3,
+    camera::CameraBuilder, color::Color, hittable::World, material::Lambertian, point::Point,
+    quad::Quad, vec3::Vec3,
 };
 
 fn main() {
@@ -16,6 +16,7 @@ fn main() {
         .image_width(800)
         .samples_per_pixel(100)
         .max_depth(50)
+        .aspect_ratio(1.0)
         .build();
 
     // Materials
@@ -61,10 +62,6 @@ fn main() {
         Vec3::new(0.0, 0.0, -4.0),
         Arc::new(lower_teal),
     )));
-
-    // let node = BVHNode::from_objects(world.into_objects());
-    // let mut world = World::new();
-    // world.push(Arc::new(node));
 
     // Render
     let file_name = "quads.png";

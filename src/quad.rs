@@ -36,9 +36,10 @@ impl Quad {
     /// Create a new quad.
     pub fn new(q: Point, u: Vec3, v: Vec3, material: Arc<dyn Material>) -> Self {
         let bounding_box = Self::compute_bounding_box(q, u, v);
-        let normal = u.cross(v).unit();
+        let n = u.cross(v);
+        let normal = n.unit();
         let d = normal.as_vec3().dot(*q);
-        let w = normal.as_vec3() / normal.as_vec3().dot(normal.as_vec3());
+        let w = n / n.dot(n);
         Self {
             q,
             u,
@@ -101,5 +102,31 @@ impl Hittable for Quad {
 
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::sync::Arc;
+
+    use crate::{
+        color::Color, hittable::Hittable, interval::Interval, material::Lambertian, point::Point,
+        ray::Ray, vec3::Vec3,
+    };
+
+    use super::Quad;
+
+    #[test]
+    fn hit_quad() {
+        let back_green = Lambertian::new(Color::new(0.2, 1.0, 0.2));
+        let q = Quad::new(
+            Point::new(0.0, 0.0, 0.0),
+            Vec3::new(2.0, 0.0, 0.0),
+            Vec3::new(0.0, 2.0, 0.0),
+            Arc::new(back_green),
+        );
+        let r = Ray::new(Point::new(1.0, 1.0, 9.0), Vec3::new(0.0, 0.0, -1.0), 0.0);
+        let hit = q.hit(&r, Interval::universe());
+        assert!(hit.is_some());
     }
 }
