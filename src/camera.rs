@@ -33,6 +33,8 @@ pub struct Camera {
     /// The maximum amount of times the traycing of a [Ray] can recurse. I.e.,
     /// how often a [Ray] can be scattered inside of the world.
     max_depth: u32,
+    /// The background color of the scene.
+    background: Color,
     /// The center of the camera.
     center: Point,
     /// The location of the pixel with coordinates (0, 0) in the world.
@@ -65,6 +67,7 @@ impl Camera {
         defocus_angle: f32,
         focus_distance: f32,
         hide_progress: bool,
+        background: Color,
     ) -> Self {
         // Calculate image height
         let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
@@ -115,6 +118,7 @@ impl Camera {
             defocus_disk_v,
             defocus_angle,
             hide_progress,
+            background,
         }
     }
 
@@ -157,7 +161,7 @@ impl Camera {
         let mut pixel_color = Color::black();
         for _ in 0..self.samples_per_pixel {
             let ray = self.get_ray(x, y);
-            pixel_color += Self::ray_color(&ray, self.max_depth, world);
+            pixel_color += self.ray_color(&ray, self.max_depth, world);
         }
         pixel_color
     }
@@ -188,18 +192,25 @@ impl Camera {
         self.center + p.x() * self.defocus_disk_u + p.y() * self.defocus_disk_v
     }
 
-    fn ray_color(ray: &Ray, depth: u32, world: &World) -> Color {
+    fn ray_color(&self, ray: &Ray, depth: u32, world: &World) -> Color {
         if depth == 0 {
             return Color::black();
         }
         let interval = Interval::new(0.001, INFINITY);
-        if let Some(hit_record) = world.hit(ray, interval) {
-            let (scattered, attenuation) = hit_record.material().scatter(ray, hit_record.copy());
-            return attenuation * Self::ray_color(&scattered, depth - 1, world);
-        }
-        let unit_direction = ray.direction().unit();
-        let a: f32 = 0.5 * (unit_direction.as_vec3().y() + 1.0);
-        (1.0 - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0)
+        let Some(hit_record) = world.hit(ray, interval) else {
+            return self.background;
+        };
+
+        let color_from_emission =
+            hit_record
+                .material()
+                .emitted(hit_record.u(), hit_record.v(), hit_record.p());
+        let Some((scattered, attenuation)) = hit_record.material().scatter(ray, hit_record.copy())
+        else {
+            return color_from_emission;
+        };
+        let color_from_scatter = attenuation * self.ray_color(&scattered, depth - 1, world);
+        color_from_scatter + color_from_emission
     }
 }
 
@@ -229,6 +240,8 @@ pub struct CameraBuilder {
     focus_distance: f32,
     /// Toggle to hide the progress bar.
     hide_progress: bool,
+    /// The background color of the scene.
+    background: Color,
 }
 
 impl CameraBuilder {
@@ -251,6 +264,7 @@ impl CameraBuilder {
             self.defocus_angle,
             self.focus_distance,
             self.hide_progress,
+            self.background,
         )
     }
 
@@ -315,6 +329,14 @@ impl CameraBuilder {
         self.focus_distance = focus_distance;
         self
     }
+
+    /// Set the background color of the scene.
+    ///
+    /// * `background` - The background color.
+    pub fn background(&mut self, background: Color) -> &mut Self {
+        self.background = background;
+        self
+    }
 }
 
 impl Default for CameraBuilder {
@@ -331,6 +353,7 @@ impl Default for CameraBuilder {
             defocus_angle: 0.0,
             focus_distance: 10.0,
             hide_progress: false,
+            background: Color::new(0.70, 0.80, 1.00),
         }
     }
 }
