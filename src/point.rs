@@ -3,7 +3,7 @@
 
 use std::{
     f32,
-    ops::{Add, Deref, Index, Mul, Sub},
+    ops::{Add, Deref, Index, IndexMut, Mul, Sub},
 };
 
 use crate::vec3::{Dimension, Vec3};
@@ -83,5 +83,11 @@ impl Index<Dimension> for Point {
 
     fn index(&self, index: Dimension) -> &Self::Output {
         &self.0[index]
+    }
+}
+
+impl IndexMut<Dimension> for Point {
+    fn index_mut(&mut self, index: Dimension) -> &mut Self::Output {
+        &mut self.0[index]
     }
 }

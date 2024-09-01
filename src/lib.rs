@@ -34,7 +34,7 @@ use vec3::{Unit3, Vec3};
 
 /// Positive infinity for f32.
 pub const INFINITY: f32 = f32::INFINITY;
-/// Negative positive infinity for f32.
+/// Negative infinity for f32.
 pub const NEG_INFINITY: f32 = f32::NEG_INFINITY;
 /// Pi
 pub const PI: f32 = f32::consts::PI;

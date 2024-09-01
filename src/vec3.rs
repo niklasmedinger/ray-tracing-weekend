@@ -3,7 +3,9 @@
 
 use std::{
     f32,
-    ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub, SubAssign},
+    ops::{
+        Add, AddAssign, Deref, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+    },
 };
 
 use strum_macros::EnumIter;
@@ -189,6 +191,16 @@ impl Index<Dimension> for Vec3 {
     }
 }
 
+impl IndexMut<Dimension> for Vec3 {
+    fn index_mut(&mut self, index: Dimension) -> &mut Self::Output {
+        match index {
+            Dimension::X => &mut self.0,
+            Dimension::Y => &mut self.1,
+            Dimension::Z => &mut self.2,
+        }
+    }
+}
+
 impl std::fmt::Display for Vec3 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {} {}", self.0, self.1, self.2)
@@ -198,6 +210,14 @@ impl std::fmt::Display for Vec3 {
 /// A three dimensional vector with unit length.
 #[derive(Copy, Debug, Clone)]
 pub struct Unit3(Vec3);
+
+impl Deref for Unit3 {
+    type Target = Vec3;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl Unit3 {
     /// Creates a new normal vector pointing in the same direction as `v`.

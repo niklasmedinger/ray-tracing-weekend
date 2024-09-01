@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     aabb::AABB,
-    hittable::{HitRecord, Hittable},
+    hittable::{HitRecord, Hittable, World},
     interval::Interval,
     material::Material,
     point::Point,
@@ -63,6 +63,61 @@ impl Quad {
     fn is_interior(a: f32, b: f32) -> bool {
         let unit_interval = Interval::unit();
         unit_interval.contains(a) && unit_interval.contains(b)
+    }
+
+    /// Create a new `box` that contains the opposite vertices `a` and `b`.
+    pub fn quad_box(a: Point, b: Point, material: Arc<dyn Material>) -> World {
+        let mut sides = World::new();
+        let min = Point::new(a.x().min(b.x()), a.y().min(b.y()), a.z().min(b.z()));
+        let max = Point::new(a.x().max(b.x()), a.y().max(b.y()), a.z().max(b.z()));
+
+        let dx = Vec3::new(max.x() - min.x(), 0.0, 0.0);
+        let dy = Vec3::new(0.0, max.y() - min.y(), 0.0);
+        let dz = Vec3::new(0.0, 0.0, max.y() - min.y());
+
+        sides.push(Arc::new(Quad::new(
+            Point::new(min.x(), min.y(), max.z()),
+            dx,
+            dy,
+            material.clone(),
+        )));
+
+        sides.push(Arc::new(Quad::new(
+            Point::new(max.x(), min.y(), max.z()),
+            -dz,
+            dy,
+            material.clone(),
+        )));
+
+        sides.push(Arc::new(Quad::new(
+            Point::new(max.x(), min.y(), min.z()),
+            -dx,
+            dy,
+            material.clone(),
+        )));
+
+        sides.push(Arc::new(Quad::new(
+            Point::new(min.x(), min.y(), min.z()),
+            dz,
+            dy,
+            material.clone(),
+        )));
+
+        sides.push(Arc::new(Quad::new(
+            Point::new(min.x(), max.y(), max.z()),
+            dx,
+            -dz,
+            material.clone(),
+        )));
+
+        sides.push(Arc::new(Quad::new(
+            Point::new(min.x(), min.y(), min.z()),
+            dx,
+            dz,
+            material,
+        )));
+
+        sides
     }
 }
 

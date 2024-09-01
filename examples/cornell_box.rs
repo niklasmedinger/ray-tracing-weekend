@@ -3,7 +3,7 @@ use std::sync::Arc;
 use ray_tracing_weekend::{
     camera::CameraBuilder,
     color::Color,
-    hittable::World,
+    hittable::{RotationY, Translate, World},
     material::{DiffuseLight, Lambertian},
     point::Point,
     quad::Quad,
@@ -20,7 +20,7 @@ fn main() {
         .with_orientation(look_from, look_at, vup)
         .fov(40.0)
         .image_width(800)
-        .samples_per_pixel(200)
+        .samples_per_pixel(50)
         .max_depth(50)
         .aspect_ratio(1.0)
         .background(Color::black())
@@ -75,11 +75,35 @@ fn main() {
         Point::new(0.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 0.0),
         Vec3::new(0.0, 555.0, 0.0),
-        white,
+        white.clone(),
     )));
+
+    let box1 = Arc::new(Quad::quad_box(
+        Point::new(0.0, 0.0, 0.0),
+        Point::new(165.0, 330.0, 165.0),
+        white.clone(),
+    ));
+    // let box1 = Arc::new(Quad::quad_box(
+    //     Point::new(130.0, 0.0, 65.0),
+    //     Point::new(295.0, 165.0, 230.0),
+    //     white.clone(),
+    // ));
+    let box1 = Arc::new(RotationY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+    world.push(box1);
+
+    let box2 = Arc::new(Quad::quad_box(
+        Point::new(0.0, 0.0, 0.0),
+        Point::new(165.0, 165.0, 165.0),
+        white,
+    ));
+    let box2 = Arc::new(RotationY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+    world.push(box2);
 
     // Render
     let file_name = "cornell_box.png";
     let image = camera.render(&world);
+    // eprintln!("Color: {:?}", image);
     image.save(file_name).expect("Failed to save file.");
 }

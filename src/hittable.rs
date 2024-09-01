@@ -4,14 +4,17 @@
 
 use std::{fmt::Debug, sync::Arc};
 
+use strum::IntoEnumIterator;
+
 use crate::{
     aabb::AABB,
+    degrees_to_radians,
     interval::Interval,
     material::Material,
     point::Point,
     ray::Ray,
-    vec3::{Unit3, Vec3},
-    PI,
+    vec3::{Dimension, Unit3, Vec3},
+    INFINITY, NEG_INFINITY, PI,
 };
 
 #[derive(Clone, Debug)]
@@ -261,58 +264,6 @@ impl Hittable for Sphere {
     }
 }
 
-// #[derive(Clone)]
-// pub struct Triangle {
-//     a: Point,
-//     b: Point,
-//     c: Point,
-//     material: Rc<dyn Material>,
-// }
-
-// impl Triangle {
-//     pub fn new(a: Point, b: Point, c: Point) -> Self {
-//         Self {
-//             a,
-//             b,
-//             c,
-//             material: todo!(),
-//         }
-//     }
-// }
-
-// impl Hittable for Triangle {
-//     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
-//         let e1 = self.b - self.a;
-//         let e2 = self.c - self.a;
-//         let n = e1.cross(e2);
-//         let det = -ray.direction().dot(n);
-//         let inv_det = 1.0 / det;
-//         let a_o = *ray.origin() - self.a;
-//         let d_a_o = a_o.cross(*ray.direction());
-//         let u = e2.dot(d_a_o) * inv_det;
-//         let v = -e1.dot(d_a_o) * inv_det;
-//         let t = a_o.dot(n) * inv_det;
-//         let p = *ray.origin() + (t * *ray.direction());
-//         if ray_t.surrounds(p.as_vec3().length())
-//             && det >= (1.0 / 10.0_f32.powi(10))
-//             && t >= 0.0
-//             && u >= 0.0
-//             && v >= 0.0
-//             && (u + v) <= 1.0
-//         {
-//             Some(HitRecord::new(
-//                 ray,
-//                 p,
-//                 n / n.length(),
-//                 t,
-//                 self.material.clone(),
-//             ))
-//         } else {
-//             None
-//         }
-//     }
-// }
-
 #[derive(Default, Debug)]
 /// A thing wrapper around a [Vec] of [Hittable]s.
 pub struct World {
@@ -341,6 +292,11 @@ impl World {
     pub fn into_objects(self) -> Vec<Arc<dyn Hittable>> {
         self.objects
     }
+
+    /// Extend the world with objects from an iterator.
+    pub fn extend(&mut self, other: impl IntoIterator<Item = Arc<dyn Hittable>>) {
+        self.objects.extend(other)
+    }
 }
 
 impl Hittable for World {
@@ -362,53 +318,126 @@ impl Hittable for World {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::{interval::Interval, point::Point, ray::Ray, vec3::Vec3, INFINITY};
+#[derive(Debug, Clone)]
+/// A new, translated instance of an object with a [Vec3] offset.
+pub struct Translate {
+    object: Arc<dyn Hittable>,
+    offset: Vec3,
+    bounding_box: AABB,
+}
 
-//     use super::{Hittable, Triangle};
+impl Translate {
+    /// Create a new instance of an object with an offset.
+    pub fn new(object: Arc<dyn Hittable>, offset: Vec3) -> Self {
+        let bounding_box = *object.bounding_box() + offset;
+        Self {
+            object,
+            offset,
+            bounding_box,
+        }
+    }
+}
 
-// #[test]
-// fn hit_triangle() {
-//     let a = Point::new(-1.0, 0.0, -1.0);
-//     let b = Point::new(1.0, 0.0, -1.0);
-//     let c = Point::new(0.0, 1.0, -1.0);
-//     let t = Triangle::new(a, b, c);
-//     let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vec3::new(0.0, 1.0, -1.0));
-//     let i = Interval::new(0.0, INFINITY);
-//     let record = t.hit(&ray, i);
-//     assert!(
-//         record.is_some(),
-//         "Ray r: {:?} did not hit triangle: {:?}",
-//         ray,
-//         t
-//     );
-//     let record = record.unwrap();
-//     assert_eq!(record.p(), c, "expected {:?}, got {:?}", c, record.p());
+impl Hittable for Translate {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        let offset_ray = Ray::new(*ray.origin() - self.offset, *ray.direction(), ray.time());
+        self.object.hit(&offset_ray, ray_t).map(|mut hit_rec| {
+            let new_p = hit_rec.p() + self.offset;
+            hit_rec.p = new_p;
+            hit_rec
+        })
+    }
 
-//     assert!(
-//         record.front_face(),
-//         "Front face was not set for ray {:?} and triangle {:?}",
-//         ray,
-//         t,
-//     );
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
+    }
+}
 
-//     let expected_surface_normal = Vec3::new(0.0, 0.0, 1.0);
-//     assert_eq!(
-//         record.normal(),
-//         expected_surface_normal,
-//         "Expected surface normal {}, got {:?}",
-//         expected_surface_normal,
-//         record.normal()
-//     );
+#[derive(Debug, Clone)]
+/// A rotation along the Y-axis.
+pub struct RotationY {
+    object: Arc<dyn Hittable>,
+    sin_theta: f32,
+    cos_theta: f32,
+    /// The bounding box of the rotated object.
+    bounding_box: AABB,
+}
 
-//     let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 1.0));
-//     let record = t.hit(&ray, i);
-//     assert!(
-//         record.is_none(),
-//         "Ray r: {:?} did hit triangle: {:?}",
-//         ray,
-//         t
-//     );
-// }
-// }
+impl RotationY {
+    /// Create a new instance of `object` which is rotated by `angle` degrees
+    /// along the Y-axis.
+    pub fn new(object: Arc<dyn Hittable>, angle: f32) -> Self {
+        let radians = degrees_to_radians(angle);
+        let sin_theta = f32::sin(radians);
+        let cos_theta = f32::cos(radians);
+        let bounding_box = object.bounding_box();
+
+        let mut min_point = Point::new(INFINITY, INFINITY, INFINITY);
+        let mut max_point = Point::new(NEG_INFINITY, NEG_INFINITY, NEG_INFINITY);
+
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let i_f32 = i as f32;
+                    let j_f32 = j as f32;
+                    let k_f32 = k as f32;
+                    let x = i_f32 * bounding_box.x().max() + (1.0 - i_f32) * bounding_box.x().min();
+                    let y = j_f32 * bounding_box.y().max() + (1.0 - j_f32) * bounding_box.y().min();
+                    let z = k_f32 * bounding_box.z().max() + (1.0 - k_f32) * bounding_box.z().min();
+
+                    let newx = cos_theta * x + sin_theta * z;
+                    let newz = -sin_theta * x + cos_theta * z;
+
+                    let tester = Vec3::new(newx, y, newz);
+                    for dimension in Dimension::iter() {
+                        min_point[dimension] = min_point[dimension].min(tester[dimension]);
+                        max_point[dimension] = max_point[dimension].max(tester[dimension]);
+                    }
+                }
+            }
+        }
+        let bounding_box = AABB::from_points(min_point, max_point);
+        Self {
+            object,
+            sin_theta,
+            cos_theta,
+            bounding_box,
+        }
+    }
+}
+
+impl Hittable for RotationY {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        let origin = Point::new(
+            (self.cos_theta * ray.origin().x()) - (self.sin_theta * ray.origin().z()),
+            ray.origin().y(),
+            (self.sin_theta * ray.origin().x()) + (self.cos_theta * ray.origin().z()),
+        );
+
+        let direction = Vec3::new(
+            (self.cos_theta * ray.direction().x()) - (self.sin_theta * ray.direction().z()),
+            ray.direction().y(),
+            (self.sin_theta * ray.direction().x()) + (self.cos_theta * ray.direction().z()),
+        );
+
+        let rotated_ray = Ray::new(origin, direction, ray.time());
+
+        self.object.hit(&rotated_ray, ray_t).map(|mut hit_rec| {
+            hit_rec.p = Point::new(
+                (self.cos_theta * hit_rec.p().x()) + (self.sin_theta * hit_rec.p().z()),
+                hit_rec.p().y(),
+                (-self.sin_theta * hit_rec.p().x()) + (self.cos_theta * hit_rec.p().z()),
+            );
+            hit_rec.normal = Unit3::new_unchecked(Vec3::new(
+                (self.cos_theta * hit_rec.normal().x()) + (self.sin_theta * hit_rec.normal().z()),
+                hit_rec.normal().y(),
+                (-self.sin_theta * hit_rec.normal().x()) + (self.cos_theta * hit_rec.normal().z()),
+            ));
+            hit_rec
+        })
+    }
+
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
+    }
+}

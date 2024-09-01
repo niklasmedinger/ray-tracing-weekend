@@ -1,5 +1,7 @@
 //! A module that implements intervals of f32.
 
+use std::ops::Add;
+
 use crate::{INFINITY, NEG_INFINITY};
 
 /// The interval of valid color intensities to be used inside of [Color].
@@ -104,5 +106,21 @@ impl Interval {
     /// The unit interval from `0.0` to `1.0`.
     pub const fn unit() -> Self {
         Self { min: 0.0, max: 1.0 }
+    }
+}
+
+impl Add<f32> for Interval {
+    type Output = Self;
+
+    fn add(self, rhs: f32) -> Self::Output {
+        Self::new(self.min + rhs, self.max + rhs)
+    }
+}
+
+impl Add<Interval> for f32 {
+    type Output = Interval;
+
+    fn add(self, rhs: Interval) -> Self::Output {
+        rhs + self
     }
 }
