@@ -82,12 +82,12 @@ impl Camera {
         let viewport_width: f32 = viewport_height * (image_width as f32 / image_height as f32);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
-        let w = (look_from - look_at).unit().as_vec3();
-        let u = (vup.cross(w)).unit().as_vec3();
-        let v = w.cross(u);
+        let w = (look_from - look_at).unit();
+        let u = (vup.cross(*w)).unit();
+        let v = w.cross(*u);
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges
-        let viewport_u = viewport_width * u;
+        let viewport_u = viewport_width * *u;
         let viewport_v = viewport_height * -v;
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
@@ -96,12 +96,12 @@ impl Camera {
 
         // Calculate the location of the upper left pixel.
         let viewport_upper_left =
-            center - (focus_distance * w) - viewport_u / 2.0 - viewport_v / 2.0;
+            center - (focus_distance * *w) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel_00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
         // Calculate the camera defocus disk basis vectors.
         let defocus_radius = focus_distance * degrees_to_radians(defocus_angle / 2.0).tan();
-        let defocus_disk_u = u * defocus_radius;
+        let defocus_disk_u = *u * defocus_radius;
         let defocus_disk_v = v * defocus_radius;
 
         Self {

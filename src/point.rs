@@ -17,11 +17,6 @@ impl Point {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Point(Vec3::new(x, y, z))
     }
-
-    /// Convert the point to a vector.
-    pub fn as_vec3(&self) -> Vec3 {
-        self.0
-    }
 }
 
 impl From<Vec3> for Point {

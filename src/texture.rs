@@ -108,6 +108,7 @@ impl ImageTexture {
         }
     }
 
+    #[inline]
     /// Clamp x into [low, high].
     fn clamp(x: u32, low: u32, high: u32) -> u32 {
         if x < low {

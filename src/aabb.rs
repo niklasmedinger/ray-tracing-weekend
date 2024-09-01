@@ -44,6 +44,7 @@ impl AABB {
         res
     }
 
+    #[inline]
     /// Create an empty bounding box.
     pub const fn empty() -> Self {
         Self {
@@ -53,6 +54,7 @@ impl AABB {
         }
     }
 
+    #[inline]
     /// Create a bounding box that spans the whole scene.
     pub const fn universe() -> Self {
         Self {
@@ -92,16 +94,19 @@ impl AABB {
         Self { x, y, z }
     }
 
+    #[inline]
     /// Get the x interval.
     pub fn x(&self) -> &Interval {
         &self.x
     }
 
+    #[inline]
     /// Get the y interval.
     pub fn y(&self) -> &Interval {
         &self.y
     }
 
+    #[inline]
     /// Get the z interval.
     pub fn z(&self) -> &Interval {
         &self.z
@@ -170,16 +175,19 @@ impl AABB {
             .total_cmp(&other_axis_interval.min())
     }
 
+    #[inline]
     /// Compare self and other in the x-dimension.
     pub fn box_x_compare(&self, other: &AABB) -> Ordering {
         self.box_compare(other, Dimension::X)
     }
 
+    #[inline]
     /// Compare self and other in the y-dimension.
     pub fn box_y_compare(&self, other: &AABB) -> Ordering {
         self.box_compare(other, Dimension::Y)
     }
 
+    #[inline]
     /// Compare self and other in the z-dimension.
     pub fn box_z_compare(&self, other: &AABB) -> Ordering {
         self.box_compare(other, Dimension::Z)

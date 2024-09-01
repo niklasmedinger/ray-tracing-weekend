@@ -19,11 +19,13 @@ impl Color {
         Color(Vec3::new(r, g, b))
     }
 
+    #[inline]
     /// The black color.
     pub fn black() -> Self {
         Color(Vec3::new(0.0, 0.0, 0.0))
     }
 
+    #[inline]
     /// The white color.
     pub fn white() -> Self {
         Color(Vec3::new(1.0, 1.0, 1.0))
@@ -40,6 +42,8 @@ impl Color {
         (rbyte, gbyte, bbyte)
     }
 
+    #[inline]
+    /// The white color.
     // Linear to gamma space
     fn linear_to_gamma(linear_component: f32) -> f32 {
         if linear_component > 0.0 {

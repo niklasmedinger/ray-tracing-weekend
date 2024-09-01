@@ -38,7 +38,7 @@ impl Quad {
         let bounding_box = Self::compute_bounding_box(q, u, v);
         let n = u.cross(v);
         let normal = n.unit();
-        let d = normal.as_vec3().dot(*q);
+        let d = normal.dot(*q);
         let w = n / n.dot(n);
         Self {
             q,
@@ -123,14 +123,14 @@ impl Quad {
 
 impl Hittable for Quad {
     fn hit(&self, ray: &crate::ray::Ray, ray_t: Interval) -> Option<HitRecord> {
-        let denom = self.normal.as_vec3().dot(*ray.direction());
+        let denom = self.normal.dot(*ray.direction());
 
         // No thit if the ray is parallel to the plane.
         if denom.abs() < 1e-8 {
             return None;
         }
 
-        let t = (self.d - self.normal.as_vec3().dot(**ray.origin())) / denom;
+        let t = (self.d - self.normal.dot(**ray.origin())) / denom;
         if !ray_t.contains(t) {
             return None;
         }

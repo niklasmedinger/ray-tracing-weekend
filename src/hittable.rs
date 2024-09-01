@@ -75,16 +75,19 @@ impl HitRecord {
         }
     }
 
+    #[inline]
     /// Return the [Point] `p` where the hit occured.
     pub fn p(&self) -> Point {
         self.p
     }
 
+    #[inline]
     /// Return the vector normal to the surface that was hit.
     pub fn normal(&self) -> Unit3 {
         self.normal
     }
 
+    #[inline]
     /// The `t` which solves `Ray(t) = p` for the [Ray] that hit the surface.
     /// Note that the hit record does not have a reference to this ray. Thus,
     /// the code that creates the record needs to keep the ray and record
@@ -93,21 +96,25 @@ impl HitRecord {
         self.t
     }
 
+    #[inline]
     /// Returns true iff the the front face of the object was hit.
     pub fn front_face(&self) -> bool {
         self.front_face
     }
 
+    #[inline]
     /// Return the material the surface is made of.
     pub fn material(&self) -> &dyn Material {
         self.material.as_ref()
     }
 
+    #[inline]
     /// Return the texture coordinate `u`.
     pub fn u(&self) -> f32 {
         self.u
     }
 
+    #[inline]
     /// Return the texture coordinate `v`.
     pub fn v(&self) -> f32 {
         self.v
@@ -115,7 +122,7 @@ impl HitRecord {
 
     fn face_normal(ray: &Ray, outward_normal: Unit3) -> (bool, Unit3) {
         // SAFETY: We assume that outward_normal has unit length.
-        let front_face = ray.direction().dot(outward_normal.as_vec3()) < 0.0;
+        let front_face = ray.direction().dot(*outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
         } else {

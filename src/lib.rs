@@ -39,26 +39,31 @@ pub const NEG_INFINITY: f32 = f32::NEG_INFINITY;
 /// Pi
 pub const PI: f32 = f32::consts::PI;
 
+#[inline]
 /// Converts `degrees` to radians.
 pub fn degrees_to_radians(degrees: f32) -> f32 {
     degrees * PI / 180.0
 }
 
+#[inline]
 /// Generates a random f32 in `[0.0, 1.0]`.
 pub fn random_0_1_f32() -> f32 {
     thread_rng().gen_range(0.0..1.0)
 }
 
+#[inline]
 /// Generates a random f32 in `[min, max]`.
 pub fn random_f32(min: f32, max: f32) -> f32 {
     thread_rng().gen_range(min..max)
 }
 
+#[inline]
 /// Generates a random vector where each component is in `[0, 0]`.
 pub fn random_0_1_vec3() -> Vec3 {
     Vec3::new(random_0_1_f32(), random_0_1_f32(), random_0_1_f32())
 }
 
+#[inline]
 /// Generates a random vector where each component is in `[min, max]`.
 pub fn random_vec3(min: f32, max: f32) -> Vec3 {
     Vec3::new(
@@ -78,6 +83,7 @@ pub fn random_in_unit_sphere() -> Vec3 {
     }
 }
 
+#[inline]
 /// Generates a random unit vector.
 pub fn random_unit_vector() -> Unit3 {
     random_in_unit_sphere().unit()

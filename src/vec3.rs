@@ -28,36 +28,43 @@ pub enum Dimension {
 pub struct Vec3(f32, f32, f32);
 
 impl Vec3 {
+    #[inline]
     /// Create a new vector from its x, y, and z component.
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self(x, y, z)
     }
 
+    #[inline]
     /// Get the x component.
     pub fn x(&self) -> f32 {
         self.0
     }
 
+    #[inline]
     /// Get the y component.
     pub fn y(&self) -> f32 {
         self.1
     }
 
+    #[inline]
     /// Get the z component.
     pub fn z(&self) -> f32 {
         self.2
     }
 
+    #[inline]
     /// Compute the length of the vector. I.e., `sqrt(x^2 + y^2 + z^2)`.
     pub fn length(&self) -> f32 {
         f32::sqrt(self.length_squared())
     }
 
+    #[inline]
     /// Compute the square of the length of the vector. I.e., `x^2 + y^2 + z^2`.
     pub fn length_squared(&self) -> f32 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
     }
 
+    #[inline]
     /// Returns true iff the vector is _near zero_. That is, each component
     /// of the vector is smaller than `10e-8`.
     pub fn near_zero(&self) -> bool {
@@ -65,11 +72,13 @@ impl Vec3 {
         self.0.abs() < s && self.1.abs() < s && self.2.abs() < s
     }
 
+    #[inline]
     /// Compute the dot product of `self` with `other`.
     pub fn dot(&self, other: Vec3) -> f32 {
         self.0 * other.0 + self.1 * other.1 + self.2 * other.2
     }
 
+    #[inline]
     /// Compute the cross product of `self` and `other`.
     pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3(
@@ -79,6 +88,7 @@ impl Vec3 {
         )
     }
 
+    #[inline]
     /// Return the unit vector that points in the same direction as `self`.
     pub fn unit(&self) -> Unit3 {
         Unit3::new_normalize(*self)
@@ -87,7 +97,7 @@ impl Vec3 {
 
 impl From<Point> for Vec3 {
     fn from(value: Point) -> Self {
-        value.as_vec3()
+        *value
     }
 }
 
@@ -220,22 +230,20 @@ impl Deref for Unit3 {
 }
 
 impl Unit3 {
+    #[inline]
     /// Creates a new normal vector pointing in the same direction as `v`.
     pub fn new_normalize(v: Vec3) -> Self {
         Unit3(v / v.length())
     }
 
+    #[inline]
     /// Creates a new normal vector pointing in the same direction as `v`.
     /// Does not normalize `v` but assumes that it is already a unit vector.
     pub fn new_unchecked(v: Vec3) -> Self {
         Unit3(v)
     }
 
-    /// Retrieves the underlying [Vec3].
-    pub fn as_vec3(&self) -> Vec3 {
-        self.0
-    }
-
+    #[inline]
     /// Consumes the unit vector and retrieves the underlying [Vec3].
     pub fn into_inner(self) -> Vec3 {
         self.0
