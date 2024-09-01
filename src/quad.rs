@@ -73,7 +73,7 @@ impl Quad {
 
         let dx = Vec3::new(max.x() - min.x(), 0.0, 0.0);
         let dy = Vec3::new(0.0, max.y() - min.y(), 0.0);
-        let dz = Vec3::new(0.0, 0.0, max.y() - min.y());
+        let dz = Vec3::new(0.0, 0.0, max.z() - min.z());
 
         sides.push(Arc::new(Quad::new(
             Point::new(min.x(), min.y(), max.z()),

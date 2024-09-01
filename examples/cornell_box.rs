@@ -19,8 +19,8 @@ fn main() {
     let camera = CameraBuilder::default()
         .with_orientation(look_from, look_at, vup)
         .fov(40.0)
-        .image_width(800)
-        .samples_per_pixel(50)
+        .image_width(1080)
+        .samples_per_pixel(400)
         .max_depth(50)
         .aspect_ratio(1.0)
         .background(Color::black())
@@ -31,7 +31,7 @@ fn main() {
     let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
     let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
     let light = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new(Color::new(
-        15.0, 15.0, 15.0,
+        16.0, 16.0, 16.0,
     )))));
 
     // World
@@ -83,11 +83,6 @@ fn main() {
         Point::new(165.0, 330.0, 165.0),
         white.clone(),
     ));
-    // let box1 = Arc::new(Quad::quad_box(
-    //     Point::new(130.0, 0.0, 65.0),
-    //     Point::new(295.0, 165.0, 230.0),
-    //     white.clone(),
-    // ));
     let box1 = Arc::new(RotationY::new(box1, 15.0));
     let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
     world.push(box1);
