@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use ray_tracing_weekend::{
+    bvh::BVHNode,
     camera::CameraBuilder,
     color::Color,
     hittable::{RotationY, Translate, World},
@@ -19,8 +20,8 @@ fn main() {
     let camera = CameraBuilder::default()
         .with_orientation(look_from, look_at, vup)
         .fov(40.0)
-        .image_width(1080)
-        .samples_per_pixel(400)
+        .image_width(800)
+        .samples_per_pixel(100)
         .max_depth(50)
         .aspect_ratio(1.0)
         .background(Color::black())
@@ -95,6 +96,10 @@ fn main() {
     let box2 = Arc::new(RotationY::new(box2, -18.0));
     let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
     world.push(box2);
+
+    let node = BVHNode::from_objects(world.into_objects());
+    let mut world = World::new();
+    world.push(Arc::new(node));
 
     // Render
     let file_name = "cornell_box.png";

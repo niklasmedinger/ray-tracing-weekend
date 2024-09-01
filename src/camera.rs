@@ -4,7 +4,7 @@
 use std::fmt::Debug;
 
 use image::{ImageBuffer, Rgb};
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use rayon::iter::ParallelIterator;
 
 use crate::{
@@ -143,16 +143,17 @@ impl Camera {
         let mut image = image::RgbImage::new(self.image_width, self.image_height);
 
         // Zip color reference with its index
-        image.par_enumerate_pixels_mut().for_each(|(x, y, color)| {
-            let c = self.render_pixel(world, x, y) * self.pixel_samples_scale;
-            let (r, g, b) = c.rgb();
-            color.0[0] = r;
-            color.0[1] = g;
-            color.0[2] = b;
-            bar.inc(1)
-        });
+        image
+            .par_enumerate_pixels_mut()
+            .progress_with(bar)
+            .for_each(|(x, y, color)| {
+                let c = self.render_pixel(world, x, y) * self.pixel_samples_scale;
+                let (r, g, b) = c.rgb();
+                color.0[0] = r;
+                color.0[1] = g;
+                color.0[2] = b;
+            });
 
-        bar.finish_and_clear();
         image
     }
 
