@@ -97,6 +97,12 @@ impl HitRecord {
     }
 
     #[inline]
+    /// Set a new `t`.
+    pub fn set_t(&mut self, t: f32) {
+        self.t = t;
+    }
+
+    #[inline]
     /// Returns true iff the the front face of the object was hit.
     pub fn front_face(&self) -> bool {
         self.front_face
