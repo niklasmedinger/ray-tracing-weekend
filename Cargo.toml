@@ -3,6 +3,9 @@ name = "ray-tracing-weekend"
 version = "0.1.0"
 edition = "2021"
 
+[profile.dev]
+codegen-units = 1
+
 [dependencies]
 image = { version = "0.25.2", features = ["rayon"] }
 indicatif = { version = "0.17.8", features = ["rayon"] }

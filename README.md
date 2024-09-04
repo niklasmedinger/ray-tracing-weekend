@@ -10,14 +10,16 @@
  </a>
 </div>
 
-This is my Rust implementation of the ray tracer developed in the
-[_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-book series. The goal of this project is to learn a bit about ray tracing, Rust,
+This is my Rust implementation of the ray tracer developed in the first two books
+of the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+book series by Peter Shirley, Trevor David Black, and Steve Hollasch.
+The goal of this project is to learn a bit about ray tracing, Rust,
 and benchmarking in Rust.
 
 ## Rendered Example Scenes
 
 Here a few selected scenes from the book series rendered with this implementation.
+If you want to see more scenes, take a look [here](./SCENES.md).
 
 | ![image](./assets/final.png) |
 |:--:|
@@ -25,42 +27,37 @@ Here a few selected scenes from the book series rendered with this implementatio
 
 --------------------------------------------------------------------------------
 
-
-| ![image](./assets/metal.png) |
+| ![image](./assets/final_next_week.png) |
 |:--:|
-| *A scene with a lambertian sphere in the center and two metal spheres left and right of it.* |
+| *The final scene of the second book.* |
 
 --------------------------------------------------------------------------------
 
-| ![image](./assets/hollow_glass.png) |
+| ![image](./assets/cornell_box.png) |
 |:--:|
-| *A scene with a lambertian sphere in the center, a  metal sphere on the left, and a dieletric sphere on the right. The dieletric sphere contains another dieletric sphere, modelling a hollow glass sphere with air inside.* |
+| *The "Cornell Box". A scene that models the interaction of light between diffuse surfaces.* |
 
 --------------------------------------------------------------------------------
 
-| ![image](./assets/viewport.png) |
+| ![image](./assets/simple_light.png) |
 |:--:|
-| *The scene with two metal spheres from an alternative viewpoint.* |
-
+| *A scene with a rectangle light source. The sphere and ground have a perlin texture.* |
 
 --------------------------------------------------------------------------------
-
-| ![image](./assets/defocus.png) |
-|:--:|
-| *The same scene with defocus (i.e., depth of field) and a smaller field-of-view.* |
-
 
 To render the scenes yourself, install [Rust](https://www.rust-lang.org/tools/install) and use
 ```
-cargo run --example scene > scene.ppm --release
+cargo run --example scene --release
 ```
-to render the file `scene` in the example folder into the file `scene.ppm`.
-Take a look at the `./examples` folder for sample scenes. Use an image viewer of your choice
-which can view `.ppm` files or, if you have `convert` from [ImageMagick](https://imagemagick.org/script/convert.php) installed,
-convert them to `.png` files via
-```
-convert scene.ppm scene.png
-```
+to render the file `scene` in the example folder into the file `scene.png`.
+Take a look at the `./examples` folder for sample scenes. For quicker renders
+with a lower quality you need to adjust the settings of the `Camera` struct
+via the `CameraBuilder`:
+
+| ![Image](./assets/CameraBuilder.PNG) |
+|:--:|
+| *Initialization of the `Camera` struct via the `CameraBuilder` struct. Optional values are instantiated with default values when not explicitly provided. See the code [here](./src/camera.rs) or build the documentation of the proejct (`cargo doc --open --no-deps`) for an exhaustive list of options.* |
+
 
 ## Benchmarking
 I used this project to experiment a bit with benchmarking in Rust. There are
@@ -83,15 +80,14 @@ To bench the ray tracer, I'm using two macro benchmarks and two micro benchmarks
 * A complete render of a grid of spheres.
 * A single pixel from the [_hollow\_glass_](./examples/hollow_glass.rs) scene.
 * A single pixel from the grid of spheres scene.
+
 See the [benches folder](./benches/) for the code of these benchmarks. Each
 benchmark is executed with both Criterion and Iai.
 
 To benchmark the code changes to the project, I use two approaches: 1) Relative
-Continuous Benchmarking, and 2) Continuous statistical benchmarking. For 1),
-I'm simply using Github Actions to checkout the current commit as well as its parent,
-and then I first benchmark the parent and then compare it to the benchmarks of the
-current commit. See [`CI.yml`](./.github/workflows/CI.yml). This allows us to
-inspect performance change in the logs of the Github Action runs:
+continuous benchmarking, and 2) Continuous statistical benchmarking. For 1),
+I'm using a [Github Action](./.github/workflows/CI.yml) which first checks out the parent of the current commit and benchmarks it, and then checks out the current commit and benchmarks it too. This allows us to inspect the performance
+difference of these two commits in the logs of the Github Action runs. For instance:
 
 | ![image](./assets/CI_benchmarks.png) |
 |:--:|
@@ -109,19 +105,33 @@ where you can inspect the different measure over time yourself!
 It also allows you to easily export automatically up-to-date images of these plots.
 Here are some example plots:
 
-| <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&measures=bd087070-50c6-40ff-aede-60d4fb58e39a&clear=true&tab=benchmarks&benchmarks=584d3db9-2f38-4302-8c61-83db3d791bb1%2C5cca1689-0371-4dde-a031-89a8b3b9b5a1"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=584d3db9-2f38-4302-8c61-83db3d791bb1%2C5cca1689-0371-4dde-a031-89a8b3b9b5a1&measures=bd087070-50c6-40ff-aede-60d4fb58e39a" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a> |
+| <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&measures=bd087070-50c6-40ff-aede-60d4fb58e39a&start_time=1722754871000&end_time=1725346882000&clear=true&tab=benchmarks&benchmarks=5cca1689-0371-4dde-a031-89a8b3b9b5a1%2Ca47d4146-1f3e-4eb1-b01c-be86d29e9354%2C584d3db9-2f38-4302-8c61-83db3d791bb1"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=5cca1689-0371-4dde-a031-89a8b3b9b5a1%2Ca47d4146-1f3e-4eb1-b01c-be86d29e9354%2C584d3db9-2f38-4302-8c61-83db3d791bb1&measures=bd087070-50c6-40ff-aede-60d4fb58e39a&start_time=1722754871000&end_time=1725346882000&title=Latency+of+Scenes" title="Latency of Scenes" alt="Latency of Scenes for Raytracing Weekend - Bencher" /></a> |
 |:--:|
 | *Latency of the scene renders over time.* |
+
+In this plot, we can see how the render time for our benchmark scenes evolved over time. The first major drop in rendering time is due to concurrent rendering of each pixel thanks to [Rayon](https://github.com/rayon-rs/rayon). This optimization is not part of the book series. Another optimization which is part of the book series is a _bounding volume hiearchy_ (BVH). In a nutshell, for each pixel, the ray tracer needs to _ask_ the objects in the scene whether the ray originating from this pixel hits the object. Without any optimization, this results in a linear amount of hit queries for each pixel. A simple idea to optimize this is to enclose each object in the scene with a _bounding volume_ which completely encloses it and then
+create a hierarchy (e.g., a binary tree) of these bounding volumes. Instead of the objects the ray tracer then queries these bounding volumes and, if the bounding volume is not hit by the current ray, does not need query the objects inside the bounding volume.
+As a result, the ray tracer only needs to  make a logarithmic amount of hit queries per pixel instead of a linear amount.
+
+Unfortunately, this optimization did not decrease the latency of our benchmark scenes. In fact, the opposite is true! It increased the rendering time. This is the bump around the 24.08.24 (08/24/24, for you americans) that you can see in the plot. Soooo... did the optimization not work? Did I implement it incorrectly?
+
+The answer is: No. The optimization works and it is implemented correctly (to the best of my knowledge), but our benchmark scenes do not show any performance increase because they do not contain enough objects! The additional book keeping that the BVH introduces does more harm than good. With the problem identified, let's solve it! I added another scene, the [_many scene_](./benches/criterion_many_scene.rs), which contains around ~900 spheres and first benchmarked it without the BVH and then with the BVH. And, as expected, we have a sharp decrease in rendering time from 109,21ms to 14,199ms! Awesome!
 
 | <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&measures=bd087070-50c6-40ff-aede-60d4fb58e39a&clear=true&tab=benchmarks&benchmarks=cfd00ae8-da39-4567-aa91-05ae3e08e565%2C8b6e8ca9-0780-4998-80fd-dd4b76f7dea2"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=cfd00ae8-da39-4567-aa91-05ae3e08e565%2C8b6e8ca9-0780-4998-80fd-dd4b76f7dea2&measures=bd087070-50c6-40ff-aede-60d4fb58e39a" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a> |
 |:--:|
 | *Latency of the single pixel renders over time.* |
 
-| <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&measures=b06ca7e4-e599-4b41-91b4-aea317107228&clear=true&tab=benchmarks&benchmarks=59bc6a68-248b-4f43-b79f-3d43bc4182be%2Caf955bb8-4aea-4f96-a726-e897781ab2b6"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=59bc6a68-248b-4f43-b79f-3d43bc4182be%2Caf955bb8-4aea-4f96-a726-e897781ab2b6&measures=b06ca7e4-e599-4b41-91b4-aea317107228" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a> |
+This plot shows the latency of the single pixel renders over time and, as we can see, it mostly increased throughout the project. The first small increases are due to code changes necessary to parallelize the pixel rendering. In a nutshell, switching from 'normal` reference counting (i.e., [Rc](https://doc.rust-lang.org/std/rc/struct.Rc.html)) to atomic reference counting ([Arcs](https://doc.rust-lang.org/std/sync/struct.Arc.html)) introduces some overhead. However, looking at the first plot, this overhead is well worth it for the rendering time of the scenes!
+
+The second increase is due to the aforementioned BVH optimization. As explained earlier, our benchmark scenes actually perform worse with the optimization because it does not contain enough objects. I did not add a single pixel render of the _many scene_ I described earlier.
+
+| <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=2&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=59bc6a68-248b-4f43-b79f-3d43bc4182be%2Caf955bb8-4aea-4f96-a726-e897781ab2b6&measures=b06ca7e4-e599-4b41-91b4-aea317107228&start_time=1724803200000&end_time=1725346882000&clear=true&tab=benchmarks"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=59bc6a68-248b-4f43-b79f-3d43bc4182be%2Caf955bb8-4aea-4f96-a726-e897781ab2b6&measures=b06ca7e4-e599-4b41-91b4-aea317107228&start_time=1724803200000&end_time=1725346882000&title=Instructions+for+Single+Pixel+Renders" title="Instructions for Single Pixel Renders" alt="Instructions for Single Pixel Renders for Raytracing Weekend - Bencher" /></a> |
 |:--:|
 | *Instructions executed for the scene renders over time.* |
 
-| <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&measures=b06ca7e4-e599-4b41-91b4-aea317107228&clear=true&tab=benchmarks&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2Ceeaef59b-700a-487e-9398-e3f1be99addd"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2Ceeaef59b-700a-487e-9398-e3f1be99addd&measures=b06ca7e4-e599-4b41-91b4-aea317107228" title="Raytracing Weekend" alt="Raytracing Weekend - Bencher" /></a> |
+Iai allows us to measure the instructions executed for our benchmarks. I only added this library/benchmarks late into the project, so we cannot see the impact of our optimizations.
+
+| <a href="https://bencher.dev/perf/raytracing-weekend?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2Ceeaef59b-700a-487e-9398-e3f1be99addd&measures=b06ca7e4-e599-4b41-91b4-aea317107228&start_time=1724803200000&end_time=1725346882000&clear=true&tab=branches"><img src="https://api.bencher.dev/v0/projects/raytracing-weekend/perf/img?branches=e272e4b9-7e97-46b2-a403-35e73893ef4f&testbeds=42132742-158d-4e64-8c2e-47984b27798f&benchmarks=2be6ef2c-5ce9-4dee-b05b-46d5f1b17f93%2Ceeaef59b-700a-487e-9398-e3f1be99addd&measures=b06ca7e4-e599-4b41-91b4-aea317107228&start_time=1724803200000&end_time=1725346882000&title=Instructions+for+Single+Pixel+Renders" title="Instructions for Single Pixel Renders" alt="Instructions for Single Pixel Renders for Raytracing Weekend - Bencher" /></a> |
 |:--:|
 | *Instructions executed for the single pixel renders over time.* |
 
