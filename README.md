@@ -136,4 +136,89 @@ Iai allows us to measure the instructions executed for our benchmarks. I only ad
 | *Instructions executed for the single pixel renders over time.* |
 
 ## Rust vs C++
-* TODO: A section on how my Rust implementation differs from the original C++ code to be more idiomatic.
+The original implementation of the ray tracer developed throughout the book series is written in C++. However, I chose to implement my ray tracer in Rust. While a straightforward port of the C++ code
+to Rust is possible, this would result in very un-idiomatic Rust code. Therefore, I chose make
+minor changes to the code to make it more idiomatic. In this Section, I'll give a quick overview of
+these changes.
+
+### `bool` as a Return Value to Communicate Optional Results
+The C++ interface for a hittable object looks like this:
+```c++
+
+class hittable {
+  public:
+    virtual ~hittable() = default;
+
+    virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
+};
+```
+The idea is that any implementation of the `hit` method writes to the `hit_record` that `rec`
+points to if and only if the `hit` method returned `true`. Put simply: `hit` makes optional changes
+to `rec` and uses a boolean to communicate whether a change occured.
+
+For cases like this, Rust features the `Option<T>` type. It looks like this:
+```Rust
+pub enum Option<T> {
+    None,
+    Some(T),
+}
+```
+The `None` variant encodes that no value of type `T` is present and the `Some(T)` variant
+encodes that a value is present. Exactly what the C++ code wanted to implement but needed
+to use booleans for! Here, my Rust version of the hittable interface:
+```Rust
+pub trait Hittable {
+    /// Compute whether `ray` hits the `self` in [Interval] `ray_t`.
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord>;
+}
+```
+This type signature communicates more clearly what is happening. If a hit occurs,
+the function returns a `Some(HitRecord)` and, should not hit occur, it returns a `None`.
+
+### Public Values in Structs to Avoid Constructors
+Throughout the book series structs like the `Camera` evolve quite a bit. Naturally,
+this means that they store more and more fields. It is standard practice to
+initialize these fields in a constructor which, often, does nothing more
+than passing on a few values it received when called. For instance, here is the
+constructor for the `translate` class:
+```C++
+class translate : public hittable {
+  public:
+    translate(shared_ptr<hittable> object, const vec3& offset)
+      : object(object), offset(offset)
+    {
+        bbox = object->bounding_box() + offset;
+    }
+}
+```
+The constructor simply forwards `object` and `offset` to internal fields and computes `bbox` 
+from these arguments.
+
+If we now extend the `translate` class, we have a problem: Every time we add a field, we have to
+make a change to the constructor. Very annoying! Especially, if you are writing a book series which
+incrementally extends the code!
+
+To sidestep this issue, the C++ code makes quite a few fields public and assumes that the calling
+code will set the values it needs. Here is an example of how the camera is set up for a rendering scene:
+```C++
+{
+    // ...
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+    cam.background        = color(0.70, 0.80, 1.00);
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(13,2,3);  
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0.6;
+    cam.focus_dist    = 10.0;
+
+    cam.render(world);
+}
+```
